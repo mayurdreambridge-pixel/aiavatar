@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Alqamist in Action</title>
+    <link rel="stylesheet" href="page.css" />
+</head>
+<body>
+    
+    <div class="container">
+        <div class="video-section">
+            <div id="status-toast" class="status-toast">
+    <div class="status-content">
+      <div class="status-spinner"></div>
+      <span class="status-text">Connecting...</span>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div id="app-container" style="opacity: 0;">
+    
+    <!-- Live Video Section -->
+    <div id="video-section">
+      <video 
+        id="liveVideo" 
+        autoplay 
+        playsinline 
+        muted="false"
+      ></video>
+      
+      <!-- Agent Info Overlay -->
+      <div class="agent-overlay">
+        <div class="agent-info">
+          <!-- <h1 class="agent-name">The Alqmist</h1>
+          <p class="agent-tagline">Your Genius Partner in Knowledge</p> -->
+        </div>
+        <div class="connection-indicator">
+          <span class="pulse-dot"></span>
+          <span id="connection-status">Live</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Panel -->
+    <!-- <div id="interactive-panel"> -->
+      
+      <!-- Voice Input Section -->
+      <!-- <div class="voice-controls"> -->
+        <!-- <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="text-input" 
+            placeholder="Type your message or use voice..."
+            autocomplete="off"
+          />
+          <button id="voice-btn" class="voice-button" title="Hold to speak">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button id="send-btn" class="send-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div> -->
+        
+        <!-- Agent Speaking Indicator -->
+        <!-- <div id="agent-speaking" class="agent-speaking" style="display: none;">
+          <div class="speaking-indicator">
+            <span class="wave"></span>
+            <span class="wave"></span>
+            <span class="wave"></span>
+          </div>
+          <span class="speaking-text">The Alqmist is speaking...</span>
+          <button id="interrupt-btn" class="interrupt-button">Stop</button>
+        </div> -->
+      <!-- </div> -->
+
+      <!-- Chat History Toggle -->
+      <!-- <button id="history-toggle" class="history-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Chat History
+      </button> -->
+
+      <!-- Chat History Panel -->
+      <!-- <div id="chat-history" class="chat-history">
+        <div class="history-header">
+          <h3>Conversation</h3>
+          <button id="close-history" class="close-btn">×</button>
+        </div>
+        <div id="messages-container" class="messages-container"></div>
+      </div> -->
+
+    <!-- </div> -->
+  </div>
+        </div>
+
+        <div class="content-section">
+            <button class="back-button" id="backBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M12 16L6 10L12 4" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <!-- Home Screen -->
+            <div class="screen active" id="screen1">
+                <div class="header">
+                    <h1>Explore <span class="highlight">Alqamist</span> in Action</h1>
+                    <div class="underline"></div>
+                </div>
+                <div class="domains" id="domainCards"></div>
+                <p class="instruction">
+                    Tap and choose a scenario to see how Alqamist<br>
+                    reasons across different domains.
+                </p>
+            </div>
+
+            <!-- Scenario Screen -->
+            <div class="screen" id="screen2">
+                <div class="scenario-header" id="scenarioHeader"></div>
+                <div id="workflowContainer"></div>
+                <div class="questions">
+                    <h3>Try asking your Genius Guide:</h3>
+                    <div class="question-grid" id="questionGrid"></div>
+                </div>
+                <div class="cta-box">
+                    <button class="cta-button" id="startChapterBtn">
+                        <span>▶</span>
+                        <span id="chapterBtnText">Start Chapter 1</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chapter Screen -->
+            <div class="screen" id="screen3">
+                <div class="chapter-badge">
+                    <span class="dot"></span>
+                    <span id="chapterBadgeText">Chapter 1 of 8</span>
+                </div>
+
+                <div class="chapter-content">
+                    <h1 id="chapterTitle">Understands <span class="highlight">Complex Work</span></h1>
+                    <p class="subtitle" id="chapterSubtitle">
+                        Watch how Alqamist processes and analyzes complex life sciences data through<br>
+                        intelligent reasoning and structured understanding
+                    </p>
+
+                    <div class="questions">
+                        <h3>Try asking your Genius Guide:</h3>
+                        <div class="question-grid" id="chapterQuestionGrid"></div>
+                    </div>
+
+                    <div class="cta-box">
+                        <h3>Ready for the Next Chapter?</h3>
+                        <p id="nextChapterDesc">Continue your journey to discover how Alqamist transforms life sciences research</p>
+                        <button class="cta-button" id="continueBtn">
+                            <span>→</span>
+                            <span id="continueBtnText">Continue with the Life Sciences Journey</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script>
+        // Custom JSON Data Structure
+        const scenarioData = {
+            medical: {
+                id: 'medical',
+                title: 'Scenario 1: Life Sciences',
+                subtitle: 'Medical Writing and Research',
+                icon: '🧬',
+                iconBg: 'green',
+                workflow: [
+                    { icon: '🧪', title: 'Lab Analysis', center: false },
+                    { icon: '📋', title: 'Trial Protocol', subtitle: 'Central Research Hub', center: true },
+                    { icon: '📊', title: 'Data Files', center: false }
+                ],
+                workflowRow2: [
+                    { icon: '🔬', title: 'Molecular Structure', center: false },
+                    { icon: '📝', title: 'Research Notes', center: false }
+                ],
+                questions: [
+                    { icon: 'ℹ️', color: 'blue', text: 'Why do Phase 3 trials take so long to prepare?' },
+                    { icon: '💡', color: 'green', text: 'What is reasoning?' },
+                    { icon: '💊', color: 'orange', text: 'What kind of drug is this example about?' },
+                    { icon: '🔍', color: 'red', text: 'How does Alqamist know what to focus on first?' }
+                ],
+                chapter: {
+                    number: 1,
+                    total: 8,
+                    title: 'Understands <span class="highlight">Complex Work</span>',
+                    subtitle: 'Watch how Alqamist processes and analyzes complex life sciences data through intelligent reasoning and structured understanding',
+                    questions: [
+                        { icon: 'ℹ️', color: 'blue', text: 'What data does it process first?' },
+                        { icon: '🔍', color: 'green', text: 'Can it detect missing or irrelevant information?' },
+                        { icon: '📊', color: 'orange', text: "What's the output of this step?" },
+                        { icon: '🗺️', color: 'red', text: 'Show me the reasoning map.' }
+                    ],
+                    nextChapterDesc: 'Continue your journey to discover how Alqamist transforms life sciences research',
+                    continueBtn: 'Continue with the Life Sciences Journey'
+                }
+            },
+            manufacturing: {
+                id: 'manufacturing',
+                title: 'Scenario 2: Manufacturing',
+                subtitle: 'Production Optimization',
+                icon: '🏭',
+                iconBg: 'orange',
+                workflow: [
+                    { icon: '📦', title: 'Supply Chain', center: false },
+                    { icon: '⚙️', title: 'Production Line', subtitle: 'Central Hub', center: true },
+                    { icon: '📈', title: 'Quality Metrics', center: false }
+                ],
+                workflowRow2: [
+                    { icon: '🔧', title: 'Equipment Data', center: false },
+                    { icon: '📊', title: 'Analytics', center: false }
+                ],
+                questions: [
+                    { icon: 'ℹ️', color: 'blue', text: 'How does predictive maintenance work?' },
+                    { icon: '💡', color: 'green', text: 'What efficiency gains are possible?' },
+                    { icon: '⚡', color: 'orange', text: 'How fast can it detect anomalies?' },
+                    { icon: '🔍', color: 'red', text: 'Show me the optimization process.' }
+                ],
+                chapter: {
+                    number: 1,
+                    total: 8,
+                    title: 'Optimizes <span class="highlight">Production Flow</span>',
+                    subtitle: 'Discover how Alqamist analyzes manufacturing data to improve efficiency and reduce downtime',
+                    questions: [
+                        { icon: 'ℹ️', color: 'blue', text: 'What bottlenecks does it identify?' },
+                        { icon: '🔍', color: 'green', text: 'How does it prioritize issues?' },
+                        { icon: '📊', color: 'orange', text: 'What are the key metrics tracked?' },
+                        { icon: '🗺️', color: 'red', text: 'Show the production flow map.' }
+                    ],
+                    nextChapterDesc: 'Continue learning how Alqamist transforms manufacturing operations',
+                    continueBtn: 'Continue with the Manufacturing Journey'
+                }
+            },
+            finance: {
+                id: 'finance',
+                title: 'Scenario 3: Pension & Insurance',
+                subtitle: 'Risk Assessment and Planning',
+                icon: '🛡️',
+                iconBg: 'blue',
+                workflow: [
+                    { icon: '📑', title: 'Policy Documents', center: false },
+                    { icon: '💼', title: 'Risk Analysis', subtitle: 'Central Hub', center: true },
+                    { icon: '📊', title: 'Financial Data', center: false }
+                ],
+                workflowRow2: [
+                    { icon: '📈', title: 'Market Trends', center: false },
+                    { icon: '🔐', title: 'Compliance', center: false }
+                ],
+                questions: [
+                    { icon: 'ℹ️', color: 'blue', text: 'How does risk assessment work?' },
+                    { icon: '💡', color: 'green', text: 'What compliance checks are performed?' },
+                    { icon: '💰', color: 'orange', text: 'How are premiums calculated?' },
+                    { icon: '🔍', color: 'red', text: 'Show the risk evaluation process.' }
+                ],
+                chapter: {
+                    number: 1,
+                    total: 8,
+                    title: 'Analyzes <span class="highlight">Risk Factors</span>',
+                    subtitle: 'See how Alqamist evaluates complex financial and actuarial data for better decision making',
+                    questions: [
+                        { icon: 'ℹ️', color: 'blue', text: 'What risk factors are considered?' },
+                        { icon: '🔍', color: 'green', text: 'How accurate are the predictions?' },
+                        { icon: '📊', color: 'orange', text: 'What data sources are used?' },
+                        { icon: '🗺️', color: 'red', text: 'Show the risk assessment map.' }
+                    ],
+                    nextChapterDesc: 'Continue exploring how Alqamist enhances financial planning',
+                    continueBtn: 'Continue with the Finance Journey'
+                }
+            }
+        };
+
+        const domains = [
+            { id: 'medical', icon: '👨‍⚕️', color: 'green', title: 'Medical Writing<br>and Research' },
+            { id: 'manufacturing', icon: '🏭', color: 'orange', title: 'Manufacturing' },
+            { id: 'finance', icon: '🛡️', color: 'blue', title: 'Pension and<br>Insurance' }
+        ];
+
+        let currentScreen = 1;
+        let currentScenario = null;
+
+        // Initialize
+        function init() {
+            renderDomains();
+            setupEventListeners();
+        }
+
+        function renderDomains() {
+            const container = document.getElementById('domainCards');
+            container.innerHTML = domains.map(domain => `
+                <div class="domain-card" data-domain="${domain.id}">
+                    <div class="domain-icon ${domain.color}">${domain.icon}</div>
+                    <h3>${domain.title}</h3>
+                </div>
+            `).join('');
+        }
+
+        function renderScenario(scenarioId) {
+            const data = scenarioData[scenarioId];
+            currentScenario = scenarioId;
+
+            // Scenario Header
+            document.getElementById('scenarioHeader').innerHTML = `
+                <div class="scenario-icon">${data.icon}</div>
+                <div>
+                    <h2>${data.title}</h2>
+                    <p>${data.subtitle}</p>
+                </div>
+            `;
+
+            // Workflow
+            document.getElementById('workflowContainer').innerHTML = `
+                <div class="workflow">
+                    ${data.workflow.map(item => `
+                        <div class="workflow-card ${item.center ? 'center' : ''}">
+                            <div class="workflow-icon">${item.icon}</div>
+                            <h4>${item.title}</h4>
+                            ${item.subtitle ? `<p>${item.subtitle}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="workflow" style="margin-top: -30px;">
+                    ${data.workflowRow2.map(item => `
+                        <div class="workflow-card">
+                            <div class="workflow-icon">${item.icon}</div>
+                            <h4>${item.title}</h4>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Questions
+            document.getElementById('questionGrid').innerHTML = data.questions.map(q => `
+                <div class="question-card">
+                    <div class="question-icon ${q.color}">${q.icon}</div>
+                    <p>${q.text}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('chapterBtnText').textContent = `Start Chapter 1 – ${data.chapter.title.replace(/<[^>]*>/g, '')}`;
+        }
+
+        function renderChapter(scenarioId) {
+            const data = scenarioData[scenarioId].chapter;
+
+            document.getElementById('chapterBadgeText').textContent = `Chapter ${data.number} of ${data.total}`;
+            document.getElementById('chapterTitle').innerHTML = data.title;
+            document.getElementById('chapterSubtitle').innerHTML = data.subtitle;
+            document.getElementById('nextChapterDesc').textContent = data.nextChapterDesc;
+            document.getElementById('continueBtnText').textContent = data.continueBtn;
+
+            document.getElementById('chapterQuestionGrid').innerHTML = data.questions.map(q => `
+                <div class="question-card">
+                    <div class="question-icon ${q.color}">${q.icon}</div>
+                    <p>${q.text}</p>
+                </div>
+            `).join('');
+        }
+
+        function navigateTo(screenNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen${screenNum}`).classList.add('active');
+            currentScreen = screenNum;
+            
+            const backBtn = document.getElementById('backBtn');
+            backBtn.classList.toggle('visible', screenNum > 1);
+
+            document.querySelector('.content-section').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setupEventListeners() {
+            // Domain cards
+            document.getElementById('domainCards').addEventListener('click', (e) => {
+                const card = e.target.closest('.domain-card');
+                if (card) {
+                    const domainId = card.dataset.domain;
+                    renderScenario(domainId);
+                    navigateTo(2);
+                }
+            });
+
+            // Back button
+            document.getElementById('backBtn').addEventListener('click', () => {
+                if (currentScreen > 1) navigateTo(currentScreen - 1);
+            });
+
+            // Start chapter button
+            document.getElementById('startChapterBtn').addEventListener('click', () => {
+                if (currentScenario) {
+                    renderChapter(currentScenario);
+                    navigateTo(3);
+                }
+            });
+
+            // Continue button
+            document.getElementById('continueBtn').addEventListener('click', () => {
+                alert('Next chapter would load here!');
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+                    if (currentScreen > 1) navigateTo(currentScreen - 1);
+                }
+            });
+        }
+
+        init();
+    </script> -->
+
+      <script type="module" src="/page.js"></script>
+</body>
+</html>
