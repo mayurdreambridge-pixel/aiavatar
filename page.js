@@ -273,14 +273,14 @@ const liveVideo = document.getElementById('liveVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
-const textInput = document.getElementById('text-input');
-const voiceBtn = document.getElementById('voice-btn');
-const sendBtn = document.getElementById('send-btn');
-const agentSpeaking = document.getElementById('agent-speaking');
-const interruptBtn = document.getElementById('interrupt-btn');
-const historyToggle = document.getElementById('history-toggle');
-const chatHistory = document.getElementById('chat-history');
-const closeHistory = document.getElementById('close-history');
+// const textInput = document.getElementById('text-input');
+// const voiceBtn = document.getElementById('voice-btn');
+// const sendBtn = document.getElementById('send-btn');
+// const agentSpeaking = document.getElementById('agent-speaking');
+// const interruptBtn = document.getElementById('interrupt-btn');
+// const historyToggle = document.getElementById('history-toggle');
+// const chatHistory = document.getElementById('chat-history');
+// const closeHistory = document.getElementById('close-history');
 const messagesContainer = document.getElementById('messages-container');
 const suggestionCards = document.querySelectorAll('.suggestion-card');
 
@@ -329,12 +329,12 @@ function addMessage(content, role) {
 }
 
 function showAgentSpeaking() {
-  agentSpeaking.style.display = 'flex';
+  // agentSpeaking.style.display = 'flex';
   isAgentSpeaking = true;
 }
 
 function hideAgentSpeaking() {
-  agentSpeaking.style.display = 'none';
+  // agentSpeaking.style.display = 'none';
   isAgentSpeaking = false;
 }
 
@@ -344,7 +344,7 @@ function hideAgentSpeaking() {
 function initSpeechRecognition() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     console.warn('Speech recognition not supported');
-    voiceBtn.style.display = 'none';
+    // voiceBtn.style.display = 'none';
     return;
   }
 
@@ -356,27 +356,27 @@ function initSpeechRecognition() {
 
   recognition.onstart = () => {
     isRecording = true;
-    voiceBtn.classList.add('recording');
-    textInput.placeholder = 'Listening...';
+    // voiceBtn.classList.add('recording');
+    //textInput.placeholder = 'Listening...';
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
-    textInput.value = transcript;
+    //textInput.value = transcript;
     sendMessage(transcript);
   };
 
   recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
     isRecording = false;
-    voiceBtn.classList.remove('recording');
-    textInput.placeholder = 'Type your message or use voice...';
+    // voiceBtn.classList.remove('recording');
+    //textInput.placeholder = 'Type your message or use voice...';
   };
 
   recognition.onend = () => {
     isRecording = false;
-    voiceBtn.classList.remove('recording');
-    textInput.placeholder = 'Type your message or use voice...';
+    // voiceBtn.classList.remove('recording');
+   // textInput.placeholder = 'Type your message or use voice...';
   };
 }
 
@@ -559,19 +559,19 @@ async function sendMessage(message) {
 
   try {
     addMessage(message, 'user');
-    textInput.value = '';
-    sendBtn.disabled = true;
+    //textInput.value = '';
+    // sendBtn.disabled = true;
 
     // Send chat message to agent
     await agentManager.chat(message);
     
     setTimeout(() => {
-      sendBtn.disabled = false;
+      // sendBtn.disabled = false;
     }, 500);
 
   } catch (error) {
     console.error('❌ Failed to send message:', error);
-    sendBtn.disabled = false;
+    // sendBtn.disabled = false;
   }
 }
 
@@ -580,46 +580,46 @@ async function sendMessage(message) {
 // ============================================
 
 // Send button
-sendBtn.addEventListener('click', () => {
-  const message = textInput.value.trim();
-  if (message) {
-    sendMessage(message);
-  }
-});
+// sendBtn.addEventListener('click', () => {
+//   const message = textInput.value.trim();
+//   if (message) {
+//     sendMessage(message);
+//   }
+// });
 
 // Enter key to send
-textInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    const message = textInput.value.trim();
-    if (message) {
-      sendMessage(message);
-    }
-  }
-});
+// textInput.addEventListener('keypress', (e) => {
+//   if (e.key === 'Enter' && !e.shiftKey) {
+//     e.preventDefault();
+//     const message = textInput.value.trim();
+//     if (message) {
+//       sendMessage(message);
+//     }
+//   }
+// });
 
 // Voice button
-voiceBtn.addEventListener('click', () => {
-  if (!recognition) return;
+// voiceBtn.addEventListener('click', () => {
+//   if (!recognition) return;
   
-  if (isRecording) {
-    recognition.stop();
-  } else {
-    recognition.start();
-  }
-});
+//   if (isRecording) {
+//     recognition.stop();
+//   } else {
+//     recognition.start();
+//   }
+// });
 
 // Interrupt button
-interruptBtn.addEventListener('click', async () => {
-  if (!isConnected || !isAgentSpeaking) return;
+// interruptBtn.addEventListener('click', async () => {
+//   if (!isConnected || !isAgentSpeaking) return;
   
-  try {
-    await agentManager.interrupt({ type: 'click' });
-    console.log('🛑 Agent interrupted');
-  } catch (error) {
-    console.error('❌ Failed to interrupt:', error);
-  }
-});
+//   try {
+//     await agentManager.interrupt({ type: 'click' });
+//     console.log('🛑 Agent interrupted');
+//   } catch (error) {
+//     console.error('❌ Failed to interrupt:', error);
+//   }
+// });
 
 // Suggestion cards
 suggestionCards.forEach(card => {
@@ -645,21 +645,21 @@ suggestionCards.forEach(card => {
 });
 
 // Chat history toggle
-historyToggle.addEventListener('click', () => {
-  chatHistory.classList.add('open');
-});
+// historyToggle.addEventListener('click', () => {
+//   chatHistory.classList.add('open');
+// });
 
-closeHistory.addEventListener('click', () => {
-  chatHistory.classList.remove('open');
-});
+// closeHistory.addEventListener('click', () => {
+//   // chatHistory.classList.remove('open');
+// });
 
 // Close history when clicking outside
 document.addEventListener('click', (e) => {
-  if (chatHistory.classList.contains('open') && 
-      !chatHistory.contains(e.target) && 
-      !historyToggle.contains(e.target)) {
-    chatHistory.classList.remove('open');
-  }
+  // if (chatHistory.classList.contains('open') && 
+  //     !chatHistory.contains(e.target) && 
+  //     !historyToggle.contains(e.target)) {
+  //   chatHistory.classList.remove('open');
+  // }
 });
 
 // ============================================
