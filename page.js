@@ -4,15 +4,9 @@ import { createAgentManager, StreamType } from '@d-id/client-sdk';
   type: 'key', 
   clientKey: "YXV0aDB8NjhmZjNmMDEyODZjNmUzNjgzMTdlZDg0OnFFVjNoSkk0NUt1SEJ2VVlFX1lWdg==" // Get this from D-ID Studio
 };
-
+let isStartIntroIsDone = false;
 const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
 
-
-
-'use strict';
-const fetchJsonFile = await fetch('./api.json');
-const DID_API = await fetchJsonFile.json();
-if (DID_API.key == '🤫') alert('Please put your api key inside ./api.json and restart..');
 
 
      const scenarioData = {
@@ -197,6 +191,8 @@ if (DID_API.key == '🤫') alert('Please put your api key inside ./api.json and 
         }
 
         function renderChapter(scenarioId) {
+
+          console.log(scenarioId)
             const data = scenarioData[scenarioId].chapter;
 
             document.getElementById('chapterBadgeText').textContent = `Chapter ${data.number} of ${data.total}`;
@@ -534,8 +530,8 @@ async function initializeAgent() {
     }
 
     setTimeout(() => {
-    introducer()
-    }, 10000);
+    //introducer()
+    }, 5000);
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
@@ -563,7 +559,9 @@ async function initializeAgent() {
 }
 
 async function introducer() {
-  console.log("<<<")
+  if(!isStartIntroIsDone)
+  {
+    isStartIntroIsDone = true;
   if (!isConnected) return;
     try {
       await agentManager.chat("introduce yourself as The Alqmist");
@@ -572,6 +570,7 @@ async function introducer() {
     } finally {
     
     }
+  }
 }
 
 // ============================================
