@@ -336,6 +336,7 @@ function showAgentSpeaking() {
 function hideAgentSpeaking() {
   // agentSpeaking.style.display = 'none';
   isAgentSpeaking = false;
+  isVideoInitialized= false;
 }
 
 // ============================================
@@ -383,12 +384,18 @@ function initSpeechRecognition() {
 // ============================================
 // AGENT SDK CALLBACKS
 // ============================================
+let isVideoInitialized = false;
+
 const callbacks = {
-  // Link video element to WebRTC stream
   onSrcObjectReady(srcObject) {
     console.log('✅ Video stream ready');
-    liveVideo.srcObject = srcObject;
-    liveVideo.muted = false;
+    
+    if (!isVideoInitialized) {
+      liveVideo.srcObject = srcObject;
+      liveVideo.muted = false;
+      isVideoInitialized = true;
+    }
+    
     return srcObject;
   },
 
