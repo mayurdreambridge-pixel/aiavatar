@@ -1,5 +1,13 @@
 import './style.css';
 import { createAgentManager, StreamType } from '@d-id/client-sdk';
+        const auth = { 
+  type: 'key', 
+  clientKey: "YXV0aDB8NjhmZjNmMDEyODZjNmUzNjgzMTdlZDg0OnFFVjNoSkk0NUt1SEJ2VVlFX1lWdg==" // Get this from D-ID Studio
+};
+
+const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
+
+
 
 'use strict';
 const fetchJsonFile = await fetch('./api.json');
@@ -255,12 +263,7 @@ if (DID_API.key == '🤫') alert('Please put your api key inside ./api.json and 
 
         init();
 
-        const auth = { 
-  type: 'key', 
-  clientKey: "YXV0aDB8NjhmZjNmMDEyODZjNmUzNjgzMTdlZDg0OnFFVjNoSkk0NUt1SEJ2VVlFX1lWdg==" // Get this from D-ID Studio
-};
 
-const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
 
 // ============================================
 // DOM ELEMENTS
@@ -270,14 +273,14 @@ const liveVideo = document.getElementById('liveVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
-// const textInput = document.getElementById('text-input');
-//const voiceBtn = document.getElementById('voice-btn');
-// const sendBtn = document.getElementById('send-btn');
-// const agentSpeaking = document.getElementById('agent-speaking');
-// const interruptBtn = document.getElementById('interrupt-btn');
+const textInput = document.getElementById('text-input');
+const voiceBtn = document.getElementById('voice-btn');
+const sendBtn = document.getElementById('send-btn');
+const agentSpeaking = document.getElementById('agent-speaking');
+const interruptBtn = document.getElementById('interrupt-btn');
 const historyToggle = document.getElementById('history-toggle');
 const chatHistory = document.getElementById('chat-history');
-//const closeHistory = document.getElementById('close-history');
+const closeHistory = document.getElementById('close-history');
 const messagesContainer = document.getElementById('messages-container');
 const suggestionCards = document.querySelectorAll('.suggestion-card');
 
@@ -289,11 +292,7 @@ let isConnected = false;
 let isAgentSpeaking = false;
 let recognition = null;
 let isRecording = false;
-let isAgentLoaded = false
-let streamId = null;
-let sessionId = null;
-let chatId = null;
-let isFluent = true
+
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
@@ -330,12 +329,12 @@ function addMessage(content, role) {
 }
 
 function showAgentSpeaking() {
-  //agentSpeaking.style.display = 'flex';
+  agentSpeaking.style.display = 'flex';
   isAgentSpeaking = true;
 }
 
 function hideAgentSpeaking() {
-  // agentSpeaking.style.display = 'none';
+  agentSpeaking.style.display = 'none';
   isAgentSpeaking = false;
 }
 
@@ -345,7 +344,7 @@ function hideAgentSpeaking() {
 function initSpeechRecognition() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     console.warn('Speech recognition not supported');
-    //voiceBtn.style.display = 'none';
+    voiceBtn.style.display = 'none';
     return;
   }
 
@@ -357,27 +356,27 @@ function initSpeechRecognition() {
 
   recognition.onstart = () => {
     isRecording = true;
-    //voiceBtn.classList.add('recording');
-    // textInput.placeholder = 'Listening...';
+    voiceBtn.classList.add('recording');
+    textInput.placeholder = 'Listening...';
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
-    // textInput.value = transcript;
+    textInput.value = transcript;
     sendMessage(transcript);
   };
 
   recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
     isRecording = false;
-    //voiceBtn.classList.remove('recording');
-    // textInput.placeholder = 'Type your message or use voice...';
+    voiceBtn.classList.remove('recording');
+    textInput.placeholder = 'Type your message or use voice...';
   };
 
   recognition.onend = () => {
     isRecording = false;
-    //voiceBtn.classList.remove('recording');
-    // textInput.placeholder = 'Type your message or use voice...';
+    voiceBtn.classList.remove('recording');
+    textInput.placeholder = 'Type your message or use voice...';
   };
 }
 
@@ -428,12 +427,7 @@ const callbacks = {
   // Video state changes (Fluent streaming)
   onVideoStateChange(state) {
     console.log('🎥 Video state:', state);
-    if(state === "START"){
-      if( isAgentLoaded == false){
-        isAgentLoaded = true;
-        
-      }
-    }
+    
     // In Fluent mode, the video is always playing
     // Just handle the visual feedback
     if (state === 'START') {
@@ -527,44 +521,10 @@ async function initializeAgent() {
     const streamType = agentManager.getStreamType();
     console.log('📡 Stream Type:', streamType);
 
-    // 2) Create Agent's Chat session
-    console.log('Creating chat session...');
-    const resChat = await fetch(`${DID_API.url}/agents/${agentId}/chat`, {
-        method: 'POST',
-        headers: { Authorization: `Basic ${DID_API.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persist: true })
-    });
-    if (!resChat.ok) throw new Error(`Failed to create chat: ${resChat.status} ${resChat.statusText}`);
-
-    const chatData = await resChat.json();
-
-        console.log('>>>>>>>>>>>>>>>>>>>>', chatData);
-
-    chatId = chatData.id;
-    console.log('Chat session created:', chatId);
-
-
-        console.log('Creating stream session...');
-    const resStream = await fetchWithRetry(`${DID_API.url}/agents/${agentId}/streams`, {
-        method: 'POST',
-        headers: { Authorization: `Basic ${DID_API.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(streamOptions)
-    });
-    if (!resStream.ok) throw new Error(`Failed to create stream: ${resStream.status} ${resStream.statusText}`);
-    const { id, session_id, offer, ice_servers, fluent } = await resStream.json();
-    streamId = id;
-    sessionId = session_id;
-    isFluent = !!fluent;
-    console.log('Stream created: ', streamId, '\nFluent mode:', isFluent);
-
     if (streamType !== StreamType.Fluent) {
       console.warn('⚠️ Not using Fluent streaming. Premium+ agent required for best experience.');
       showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
     }
-
-    setTimeout(() => {
-button1click()
-}, 10000);
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
@@ -588,26 +548,7 @@ button1click()
     
     showStatus(errorMessage);
     alert(errorMessage);
-
-    
   }
-}async function fetchWithRetry(url, options, retries = 3) {
-    try {
-        const res = await fetch(url, options);
-        if (!res.ok && retries > 0) {
-            console.warn('Fetch failed, retrying...', url);
-            await new Promise((r) => setTimeout(r, (Math.random() + 1) * 1000));
-            return fetchWithRetry(url, options, retries - 1);
-        }
-        return res;
-    } catch (err) {
-        if (retries > 0) {
-            console.warn('Fetch error, retrying...', url);
-            await new Promise((r) => setTimeout(r, (Math.random() + 1) * 1000));
-            return fetchWithRetry(url, options, retries - 1);
-        }
-        throw err;
-    }
 }
 
 // ============================================
@@ -618,19 +559,19 @@ async function sendMessage(message) {
 
   try {
     addMessage(message, 'user');
-    // textInput.value = '';
-    //sendBtn.disabled = true;
+    textInput.value = '';
+    sendBtn.disabled = true;
 
     // Send chat message to agent
     await agentManager.chat(message);
     
     setTimeout(() => {
-      //sendBtn.disabled = false;
+      sendBtn.disabled = false;
     }, 500);
 
   } catch (error) {
     console.error('❌ Failed to send message:', error);
-    //sendBtn.disabled = false;
+    sendBtn.disabled = false;
   }
 }
 
@@ -639,46 +580,46 @@ async function sendMessage(message) {
 // ============================================
 
 // Send button
-// sendBtn.addEventListener('click', () => {
-//   const message = textInput.value.trim();
-//   if (message) {
-//     sendMessage(message);
-//   }
-// });
+sendBtn.addEventListener('click', () => {
+  const message = textInput.value.trim();
+  if (message) {
+    sendMessage(message);
+  }
+});
 
 // Enter key to send
-// textInput.addEventListener('keypress', (e) => {
-//   if (e.key === 'Enter' && !e.shiftKey) {
-//     e.preventDefault();
-//     const message = textInput.value.trim();
-//     if (message) {
-//       sendMessage(message);
-//     }
-//   }
-// });
+textInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    const message = textInput.value.trim();
+    if (message) {
+      sendMessage(message);
+    }
+  }
+});
 
 // Voice button
-// voiceBtn.addEventListener('click', () => {
-//   if (!recognition) return;
+voiceBtn.addEventListener('click', () => {
+  if (!recognition) return;
   
-//   if (isRecording) {
-//     recognition.stop();
-//   } else {
-//     recognition.start();
-//   }
-// });
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    recognition.start();
+  }
+});
 
 // Interrupt button
-// interruptBtn.addEventListener('click', async () => {
-//   if (!isConnected || !isAgentSpeaking) return;
+interruptBtn.addEventListener('click', async () => {
+  if (!isConnected || !isAgentSpeaking) return;
   
-//   try {
-//     await agentManager.interrupt({ type: 'click' });
-//     console.log('🛑 Agent interrupted');
-//   } catch (error) {
-//     console.error('❌ Failed to interrupt:', error);
-//   }
-// });
+  try {
+    await agentManager.interrupt({ type: 'click' });
+    console.log('🛑 Agent interrupted');
+  } catch (error) {
+    console.error('❌ Failed to interrupt:', error);
+  }
+});
 
 // Suggestion cards
 suggestionCards.forEach(card => {
@@ -704,21 +645,21 @@ suggestionCards.forEach(card => {
 });
 
 // Chat history toggle
-// historyToggle.addEventListener('click', () => {
-//   chatHistory.classList.add('open');
-// });
+historyToggle.addEventListener('click', () => {
+  chatHistory.classList.add('open');
+});
 
-// closeHistory.addEventListener('click', () => {
-//   chatHistory.classList.remove('open');
-// });
+closeHistory.addEventListener('click', () => {
+  chatHistory.classList.remove('open');
+});
 
 // Close history when clicking outside
 document.addEventListener('click', (e) => {
-  // if (chatHistory.classList.contains('open') && 
-  //     !chatHistory.contains(e.target) && 
-  //     !historyToggle.contains(e.target)) {
-  //   chatHistory.classList.remove('open');
-  // }
+  if (chatHistory.classList.contains('open') && 
+      !chatHistory.contains(e.target) && 
+      !historyToggle.contains(e.target)) {
+    chatHistory.classList.remove('open');
+  }
 });
 
 // ============================================
@@ -753,21 +694,3 @@ async function unregisterServiceWorkers() {
   // Initialize agent
   await initializeAgent();
 })();
-
-
-
-async function button1click() {
-    console.log(">>>>>>>>1")
-    const payload = {
-        messages: [{ content: "Introcuce your self ", role: 'user', created_at: new Date().toISOString() }],
-        streamId,
-        sessionId
-    };
-
-        console.log(">>>>>>>>1",payload)
-    await fetch(`${DID_API.url}/agents/${agentId}/chat/${chatId}`, {
-        method: 'POST',
-        headers: { Authorization: `Basic ${DID_API.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-}

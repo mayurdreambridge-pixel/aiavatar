@@ -10,7 +10,9 @@
     
     <div class="container">
         <div class="video-section">
-            <div id="status-toast" class="status-toast">
+ 
+            <!-- Connection Status Toast -->
+  <div id="status-toast" class="status-toast">
     <div class="status-content">
       <div class="status-spinner"></div>
       <span class="status-text">Connecting...</span>
@@ -26,7 +28,6 @@
         id="liveVideo" 
         autoplay 
         playsinline 
-        muted="false"
       ></video>
       
       <!-- Agent Info Overlay -->
@@ -43,11 +44,38 @@
     </div>
 
     <!-- Interactive Panel -->
-    <!-- <div id="interactive-panel"> -->
+    <div id="interactive-panel">
       
+      <!-- Suggestion Cards -->
+      <div class="suggestions-grid">
+        <button class="suggestion-card" data-prompt="introduce yourself as The Alqmist">
+          <div class="card-icon">👋</div>
+          <div class="card-title">Meet The Alqmist</div>
+          <div class="card-subtitle">Introduction</div>
+        </button>
+
+        <button class="suggestion-card" data-prompt="Tell me about manufacturing">
+          <div class="card-icon">🏭</div>
+          <div class="card-title">Manufacturing</div>
+          <div class="card-subtitle">Industry insights</div>
+        </button>
+
+        <button class="suggestion-card" data-prompt="Tell me about medical applications">
+          <div class="card-icon">🏥</div>
+          <div class="card-title">Medical</div>
+          <div class="card-subtitle">Healthcare solutions</div>
+        </button>
+
+        <button class="suggestion-card" data-prompt="Tell me about finance">
+          <div class="card-icon">💰</div>
+          <div class="card-title">Finance</div>
+          <div class="card-subtitle">Financial expertise</div>
+        </button>
+      </div>
+
       <!-- Voice Input Section -->
-      <!-- <div class="voice-controls"> -->
-        <!-- <div class="input-wrapper">
+      <div class="voice-controls">
+        <div class="input-wrapper">
           <input 
             type="text" 
             id="text-input" 
@@ -66,10 +94,10 @@
               <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-        </div> -->
+        </div>
         
         <!-- Agent Speaking Indicator -->
-        <!-- <div id="agent-speaking" class="agent-speaking" style="display: none;">
+        <div id="agent-speaking" class="agent-speaking" style="display: none;">
           <div class="speaking-indicator">
             <span class="wave"></span>
             <span class="wave"></span>
@@ -77,28 +105,29 @@
           </div>
           <span class="speaking-text">The Alqmist is speaking...</span>
           <button id="interrupt-btn" class="interrupt-button">Stop</button>
-        </div> -->
-      <!-- </div> -->
+        </div>
+      </div>
 
       <!-- Chat History Toggle -->
-      <!-- <button id="history-toggle" class="history-toggle">
+      <button id="history-toggle" class="history-toggle">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         Chat History
-      </button> -->
+      </button>
 
       <!-- Chat History Panel -->
-      <!-- <div id="chat-history" class="chat-history">
+      <div id="chat-history" class="chat-history">
         <div class="history-header">
           <h3>Conversation</h3>
           <button id="close-history" class="close-btn">×</button>
         </div>
         <div id="messages-container" class="messages-container"></div>
-      </div> -->
+      </div>
 
-    <!-- </div> -->
+    </div>
   </div>
+ 
         </div>
 
         <div class="content-section">
