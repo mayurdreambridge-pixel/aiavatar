@@ -7,6 +7,21 @@ import { createAgentManager, StreamType } from '@d-id/client-sdk';
 let isStartIntroIsDone = false;
 const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
 
+const continueButton = document.getElementById('continueButton');
+const continuepage = document.getElementById('continuepage');
+const mainPage = document.getElementById('mainPage');
+
+
+continueButton.addEventListener('click', () => {
+if (continuepage) {
+    continuepage.style.display = 'none'; // Hides continuePage
+  }
+  if (mainPage) {
+    mainPage.style.display = 'block'; // Hides mainPage
+  }
+        
+});
+
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
 
      const scenarioData = {
@@ -639,10 +654,10 @@ const liveVideo = document.getElementById('liveVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
-// const textInput = document.getElementById('text-input');
-// const voiceBtn = document.getElementById('voice-btn');
-// const sendBtn = document.getElementById('send-btn');
-// const agentSpeaking = document.getElementById('agent-speaking');
+ const textInput = document.getElementById('text-input');
+const voiceBtn = document.getElementById('voice-btn');
+//const sendBtn = document.getElementById('send-btn');
+const agentSpeaking = document.getElementById('agent-speaking');
 // const interruptBtn = document.getElementById('interrupt-btn');
 // const historyToggle = document.getElementById('history-toggle');
 // const chatHistory = document.getElementById('chat-history');
@@ -658,6 +673,7 @@ let isConnected = false;
 let isAgentSpeaking = false;
 let recognition = null;
 let isRecording = false;
+let inputtextvalue =""
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -711,7 +727,7 @@ function hideAgentSpeaking() {
 function initSpeechRecognition() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     console.warn('Speech recognition not supported');
-    // voiceBtn.style.display = 'none';
+     voiceBtn.style.display = 'none';
     return;
   }
 
@@ -723,27 +739,32 @@ function initSpeechRecognition() {
 
   recognition.onstart = () => {
     isRecording = true;
-    // voiceBtn.classList.add('recording');
-    //textInput.placeholder = 'Listening...';
+     voiceBtn.classList.add('recording');
+    textInput.placeholder = 'Listening...';
+       inputtextvalue = 'Listening...';
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
-    //textInput.value = transcript;
-    //sendMessage(transcript);
+    textInput.value = transcript;
+    inputtextvalue = transcript
+    sendMessage(transcript);
   };
 
   recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
     isRecording = false;
-    // voiceBtn.classList.remove('recording');
-    //textInput.placeholder = 'Type your message or use voice...';
+     voiceBtn.classList.remove('recording');
+    textInput.placeholder = 'Type your message or use voice...';
+      inputtextvalue = 'Type your message or use voice...';
+
   };
 
   recognition.onend = () => {
     isRecording = false;
-    // voiceBtn.classList.remove('recording');
-   // textInput.placeholder = 'Type your message or use voice...';
+     voiceBtn.classList.remove('recording');
+    textInput.placeholder = 'Type your message or use voice...';
+     inputtextvalue = 'Type your message or use voice...';
   };
 }
 
@@ -899,9 +920,7 @@ async function initializeAgent() {
       showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
     }
 
-    setTimeout(() => {
-    //introducer()
-    }, 5000);
+    // introducer()
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
@@ -922,7 +941,6 @@ async function initializeAgent() {
     } else {
       errorMessage += error.message;
     }
-    
     showStatus(errorMessage);
     alert(errorMessage);
   }
@@ -951,8 +969,9 @@ async function sendMessage(message) {
 
   try {
     addMessage(message, 'user');
-    //textInput.value = '';
-    // sendBtn.disabled = true;
+   // textInput.value = '';
+     inputtextvalue = '';
+   // sendBtn.disabled = true;
 
     // Send chat message to agent
     await agentManager.chat(message);
@@ -963,7 +982,7 @@ async function sendMessage(message) {
 
   } catch (error) {
     console.error('❌ Failed to send message:', error);
-    // sendBtn.disabled = false;
+   //  sendBtn.disabled = false;
   }
 }
 
@@ -973,7 +992,7 @@ async function sendMessage(message) {
 
 // Send button
 // sendBtn.addEventListener('click', () => {
-//   const message = textInput.value.trim();
+//   const message = inputtextvalue.trim();
 //   if (message) {
 //     sendMessage(message);
 //   }
@@ -991,15 +1010,15 @@ async function sendMessage(message) {
 // });
 
 // Voice button
-// voiceBtn.addEventListener('click', () => {
-//   if (!recognition) return;
+voiceBtn.addEventListener('click', () => {
+  if (!recognition) return;
   
-//   if (isRecording) {
-//     recognition.stop();
-//   } else {
-//     recognition.start();
-//   }
-// });
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    recognition.start();
+  }
+});
 
 // Interrupt button
 // interruptBtn.addEventListener('click', async () => {

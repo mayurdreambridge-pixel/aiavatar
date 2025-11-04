@@ -363,3 +363,192 @@
             line-height: 1.6;
             margin-bottom: 60px;
         }
+       
+        /* The main block, providing the scope for all other styles */
+        .alqamist-engine {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e8eef7 0%, #d4e4f7 50%, #c8ddf5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative circles - now an Element (`__circle`) with Modifiers (`--1`, etc.) */
+        .alqamist-engine__circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .alqamist-engine__circle--1 {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 8%;
+        }
+
+        .alqamist-engine__circle--2 {
+            width: 100px;
+            height: 100px;
+            bottom: 15%;
+            left: 5%;
+        }
+
+        .alqamist-engine__circle--3 {
+            width: 80px;
+            height: 80px;
+            top: 25%;
+            right: 10%;
+        }
+        
+        .alqamist-engine__container {
+            text-align: center;
+            z-index: 10;
+        }
+
+        .alqamist-engine__logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.4);
+            animation: alqamist-engine__logo--float 3s ease-in-out infinite; /* unique animation name */
+        }
+
+        .alqamist-engine__logo::before {
+            content: '';
+            width: 40px;
+            height: 60px;
+            background: white;
+            border-radius: 30px 30px 30px 30px;
+            position: relative;
+        }
+
+        .alqamist-engine__logo::after {
+            content: '';
+            width: 40px;
+            height: 60px;
+            background: white;
+            border-radius: 30px 30px 30px 30px;
+            position: absolute;
+            margin-left: -15px;
+        }
+
+        @keyframes alqamist-engine__logo--float { /* unique animation name */
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .alqamist-engine__title {
+            font-size: 56px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .alqamist-engine__tagline { /* unique name */
+            font-size: 24px;
+            color: #4a90e2;
+            margin-bottom: 60px;
+            font-weight: 400;
+        }
+
+        .alqamist-engine__steps-wrapper { /* unique name */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+        }
+
+        .alqamist-engine__step {
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+
+        .alqamist-engine__step--understand {
+            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
+        }
+
+        .alqamist-engine__step--think {
+            background: linear-gradient(135deg, #66c167 0%, #7bcf7c 100%);
+        }
+
+        .alqamist-engine__step--plan {
+            background: linear-gradient(135deg, #f5a623 0%, #f7b94d 100%);
+        }
+
+        .alqamist-engine__step--learn {
+            background: linear-gradient(135deg, #ff6b4a 0%, #ff8265 100%);
+        }
+
+        .alqamist-engine__arrow {
+            color: #999;
+            font-size: 20px;
+        }
+
+        .alqamist-engine__action-button { /* unique name */
+            padding: 16px 50px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alqamist-engine__action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(74, 144, 226, 0.4);
+        }
+
+        .alqamist-engine__action-button::after {
+            content: '›';
+            font-size: 24px;
+        }
+
+        /* Media Queries - also updated with unique class names */
+        @media (max-width: 768px) {
+            .alqamist-engine__title {
+                font-size: 40px;
+            }
+
+            .alqamist-engine__tagline {
+                font-size: 18px;
+            }
+
+            .alqamist-engine__steps-wrapper {
+                flex-wrap: wrap;
+            }
+
+            .alqamist-engine__arrow {
+                display: none;
+            }
+        }
+
+
+

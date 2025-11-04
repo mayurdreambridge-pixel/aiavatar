@@ -4,249 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Alqamist - The Reasoning Engine</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #e8eef7 0%, #d4e4f7 50%, #c8ddf5 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Decorative circles */
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .circle-1 {
-            width: 200px;
-            height: 200px;
-            top: 10%;
-            left: 8%;
-        }
-
-        .circle-2 {
-            width: 100px;
-            height: 100px;
-            bottom: 15%;
-            left: 5%;
-        }
-
-        .circle-3 {
-            width: 80px;
-            height: 80px;
-            top: 25%;
-            right: 10%;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.5);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #555;
-            transition: all 0.3s ease;
-        }
-
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: translateX(-3px);
-        }
-
-        .container {
-            text-align: center;
-            z-index: 10;
-        }
-
-        .logo {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.4);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .logo::before {
-            content: '';
-            width: 40px;
-            height: 60px;
-            background: white;
-            border-radius: 30px 30px 30px 30px;
-            position: relative;
-        }
-
-        .logo::after {
-            content: '';
-            width: 40px;
-            height: 60px;
-            background: white;
-            border-radius: 30px 30px 30px 30px;
-            position: absolute;
-            margin-left: -15px;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        h1 {
-            font-size: 56px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            font-size: 24px;
-            color: #4a90e2;
-            margin-bottom: 60px;
-            font-weight: 400;
-        }
-
-        .steps {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 50px;
-        }
-
-        .step {
-            padding: 12px 28px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .step:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .step-understand {
-            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
-        }
-
-        .step-think {
-            background: linear-gradient(135deg, #66c167 0%, #7bcf7c 100%);
-        }
-
-        .step-plan {
-            background: linear-gradient(135deg, #f5a623 0%, #f7b94d 100%);
-        }
-
-        .step-learn {
-            background: linear-gradient(135deg, #ff6b4a 0%, #ff8265 100%);
-        }
-
-        .arrow {
-            color: #999;
-            font-size: 20px;
-        }
-
-        .continue-btn {
-            padding: 16px 50px;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #4a90e2 0%, #5b9ee5 100%);
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(74, 144, 226, 0.4);
-        }
-
-        .continue-btn::after {
-            content: '›';
-            font-size: 24px;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 40px;
-            }
-
-            .subtitle {
-                font-size: 18px;
-            }
-
-            .steps {
-                flex-wrap: wrap;
-            }
-
-            .arrow {
-                display: none;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="page.css" /> 
 </head>
 <body>
-    <div class="circle circle-1"></div>
-    <div class="circle circle-2"></div>
-    <div class="circle circle-3"></div>
-
-    <button class="back-button" onclick="window.history.back()">‹</button>
-
-    <div class="container">
-        <div class="logo"></div>
+    <div class="alqamist-engine">
+        <div class="alqamist-engine__circle alqamist-engine__circle--1"></div>
+        <div class="alqamist-engine__circle alqamist-engine__circle--2"></div>
+        <div class="alqamist-engine__circle alqamist-engine__circle--3"></div>
         
-        <h1>The Alqamist</h1>
-        <p class="subtitle">The Reasoning Engine</p>
+        <div class="alqamist-engine__container">
+            <div class="alqamist-engine__logo"></div>
+            <h1 class="alqamist-engine__title">The Alqamist</h1>
+            <p class="alqamist-engine__tagline">The Reasoning Engine</p>
+            
+            <div class="alqamist-engine__steps-wrapper">
+                <div class="alqamist-engine__step alqamist-engine__step--understand">Understand</div>
+                <span class="alqamist-engine__arrow">→</span>
+                <div class="alqamist-engine__step alqamist-engine__step--think">Think</div>
+                <span class="alqamist-engine__arrow">→</span>
+                <div class="alqamist-engine__step alqamist-engine__step--plan">Plan</div>
+                <span class="alqamist-engine__arrow">→</span>
+                <div class="alqamist-engine__step alqamist-engine__step--learn">Learn</div>
+            </div>
 
-        <div class="steps">
-            <div class="step step-understand">Understand</div>
-            <span class="arrow">→</span>
-            <div class="step step-think">Think</div>
-            <span class="arrow">→</span>
-            <div class="step step-plan">Plan</div>
-            <span class="arrow">→</span>
-            <div class="step step-learn">Learn</div>
+            <button  id ='continueButton' class="alqamist-engine__action-button" onclick="window.location.href='page.html'">Continue</button>
         </div>
-
-        <button class="continue-btn" onclick="window.location.href='page.html'">Continue</button>
     </div>
 </body>
 </html>
