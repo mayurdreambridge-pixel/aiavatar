@@ -281,7 +281,7 @@ const connectionStatus = document.getElementById('connection-status');
 // const historyToggle = document.getElementById('history-toggle');
 // const chatHistory = document.getElementById('chat-history');
 // const closeHistory = document.getElementById('close-history');
-const messagesContainer = document.getElementById('messages-container');
+// const messagesContainer = document.getElementById('messages-container');
 const suggestionCards = document.querySelectorAll('.suggestion-card');
 
 // ============================================
@@ -324,8 +324,8 @@ function addMessage(content, role) {
   messageText.textContent = content;
   
   messageDiv.appendChild(messageText);
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  // messagesContainer.appendChild(messageDiv);
+  // messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 function showAgentSpeaking() {
@@ -363,7 +363,7 @@ function initSpeechRecognition() {
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     //textInput.value = transcript;
-    sendMessage(transcript);
+    //sendMessage(transcript);
   };
 
   recognition.onerror = (event) => {
@@ -526,6 +526,10 @@ async function initializeAgent() {
       showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
     }
 
+    setTimeout(() => {
+    introducer()
+    }, 10000);
+
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
     
@@ -549,6 +553,18 @@ async function initializeAgent() {
     showStatus(errorMessage);
     alert(errorMessage);
   }
+}
+
+async function introducer() {
+  console.log("<<<")
+  if (!isConnected) return;
+    try {
+      await agentManager.chat("introduce yourself as The Alqmist");
+    } catch (error) {
+      console.error('❌ Failed to send suggestion:', error);
+    } finally {
+    
+    }
 }
 
 // ============================================
@@ -632,7 +648,7 @@ suggestionCards.forEach(card => {
     card.classList.add('loading');
     
     try {
-      await agentManager.chat(prompt);
+      await agentManager.chat("introduce yourself as The Alqmist");
       addMessage(prompt, 'user');
     } catch (error) {
       console.error('❌ Failed to send suggestion:', error);
