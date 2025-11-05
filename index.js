@@ -20,9 +20,7 @@ if (continuepage) {
   if (mainPage) {
     mainPage.style.display = 'block'; // Hides mainPage
   }
-        introducer()
-
-   
+ // introducer()
 });
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
@@ -504,7 +502,18 @@ if (continuepage) {
             const data = scenarioData[scenarioId];
             currentScenario = scenarioId;
             currentChapterIndex = 0; // Reset to Chapter 1 when a new scenario is selected
-
+            console.log(scenarioId)
+            if(scenarioId == 'medical')
+            {
+              AskQuestion('Give brief about medical')
+            }
+            if(scenarioId == 'manufacturing')
+              {
+              AskQuestion('Give brief about manufacturing')
+            }
+              if(scenarioId == 'finance'){
+              AskQuestion('Give brief about finance')
+            }
             // Scenario Header
             document.getElementById('scenarioHeader').innerHTML = `
                 <div class="scenario-icon">${data.icon}</div>
@@ -1040,27 +1049,27 @@ voiceBtn.addEventListener('click', () => {
 // });
 
 // Suggestion cards
-suggestionCards.forEach(card => {
-  card.addEventListener('click', async () => {
-    if (!isConnected) return;
+// suggestionCards.forEach(card => {
+//   card.addEventListener('click', async () => {
+//     if (!isConnected) return;
     
-    const prompt = card.dataset.prompt;
-    if (!prompt) return;
+//     const prompt = card.dataset.prompt;
+//     if (!prompt) return;
 
-    card.classList.add('loading');
+//     card.classList.add('loading');
     
-    try {
-      await agentManager.chat("introduce yourself as The Alqmist");
-      addMessage(prompt, 'user');
-    } catch (error) {
-      console.error('❌ Failed to send suggestion:', error);
-    } finally {
-      setTimeout(() => {
-        card.classList.remove('loading');
-      }, 1000);
-    }
-  });
-});
+//     try {
+//       await agentManager.chat("introduce yourself as The Alqmist");
+//       addMessage(prompt, 'user');
+//     } catch (error) {
+//       console.error('❌ Failed to send suggestion:', error);
+//     } finally {
+//       setTimeout(() => {
+//         card.classList.remove('loading');
+//       }, 1000);
+//     }
+//   });
+// });
 
 // Chat history toggle
 // historyToggle.addEventListener('click', () => {
