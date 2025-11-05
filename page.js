@@ -1118,7 +1118,6 @@ async function unregisterServiceWorkers() {
 async function AskQuestion(question) {
   if (!isConnected) return;
     try {
-      await agentManager.interrupt({ type: 'click' });
       await agentManager.chat(question);
     } catch (error) {
       console.error('❌ Failed to send suggestion:', error);
