@@ -173,7 +173,7 @@ if (continuepage) {
                         ],
                         nextChapterDesc: 'You have completed the Life Sciences journey. Click below to return to the home screen.',
                         continueBtn: 'Return to Scenarios',
-                            question:'How does Alqamist connect with real research systems?'
+                        question:'How does Alqamist connect with real research systems?'
                     }
                 ],
                 // Start with chapter index 0 for the first chapter on the scenario screen
@@ -657,7 +657,7 @@ const liveVideo = document.getElementById('liveVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
- const textInput = document.getElementById('text-input');
+ //const textInput = document.getElementById('text-input');
 const voiceBtn = document.getElementById('voice-btn');
 //const sendBtn = document.getElementById('send-btn');
 const agentSpeaking = document.getElementById('agent-speaking');
@@ -743,13 +743,13 @@ function initSpeechRecognition() {
   recognition.onstart = () => {
     isRecording = true;
      voiceBtn.classList.add('recording');
-    textInput.placeholder = 'Listening...';
+   // textInput.placeholder = 'Listening...';
        inputtextvalue = 'Listening...';
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
-    textInput.value = transcript;
+    //textInput.value = transcript;
     inputtextvalue = transcript
     sendMessage(transcript);
   };
@@ -758,7 +758,7 @@ function initSpeechRecognition() {
     console.error('Speech recognition error:', event.error);
     isRecording = false;
      voiceBtn.classList.remove('recording');
-    textInput.placeholder = 'Type your message or use voice...';
+   // textInput.placeholder = 'Type your message or use voice...';
       inputtextvalue = 'Type your message or use voice...';
 
   };
@@ -766,7 +766,7 @@ function initSpeechRecognition() {
   recognition.onend = () => {
     isRecording = false;
      voiceBtn.classList.remove('recording');
-    textInput.placeholder = 'Type your message or use voice...';
+   // textInput.placeholder = 'Type your message or use voice...';
      inputtextvalue = 'Type your message or use voice...';
   };
 }
@@ -956,6 +956,7 @@ async function introducer() {
   if (!isConnected) return;
     try {
       await agentManager.chat("introduce yourself as The Alqmist");
+  
     } catch (error) {
       console.error('❌ Failed to send suggestion:', error);
     } finally {
