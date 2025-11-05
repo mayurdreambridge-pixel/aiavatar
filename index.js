@@ -20,7 +20,7 @@ if (continuepage) {
   if (mainPage) {
     mainPage.style.display = 'block'; // Hides mainPage
   }
- // introducer()
+  introducer()
 });
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
