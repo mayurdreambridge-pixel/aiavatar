@@ -11,6 +11,7 @@ const continueButton = document.getElementById('continueButton');
 const continuepage = document.getElementById('continuepage');
 const mainPage = document.getElementById('mainPage');
 
+let isAgentLoaded = false;
 
 continueButton.addEventListener('click', () => {
 if (continuepage) {
@@ -19,7 +20,9 @@ if (continuepage) {
   if (mainPage) {
     mainPage.style.display = 'block'; // Hides mainPage
   }
-        
+        introducer()
+
+   
 });
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
@@ -870,6 +873,7 @@ const callbacks = {
 // ============================================
 async function initializeAgent() {
   try {
+        continueButton.style.display = 'none'
     // Validate credentials
     if (!auth.clientKey || auth.clientKey === 'YOUR_CLIENT_KEY_HERE') {
       const message = '⚠️ Missing Client Key!\n\nPlease add your Client Key in main.js:\n1. Go to D-ID Studio\n2. Click your agent → Embed\n3. Copy data-client-key value\n4. Paste in main.js line 11';
@@ -922,8 +926,7 @@ async function initializeAgent() {
       console.warn('⚠️ Not using Fluent streaming. Premium+ agent required for best experience.');
       showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
     }
-
-    // introducer()
+         continueButton.style.display = 'block'
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
@@ -1115,6 +1118,7 @@ async function unregisterServiceWorkers() {
 async function AskQuestion(question) {
   if (!isConnected) return;
     try {
+      await agentManager.interrupt({ type: 'click' });
       await agentManager.chat(question);
     } catch (error) {
       console.error('❌ Failed to send suggestion:', error);
