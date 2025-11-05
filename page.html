@@ -143,29 +143,43 @@
                 </div>
                 <!-- Voice Input Section -->
       <div class="voice-controls"> 
-        <div class="input-wrapper">
+        <!-- <div class="input-wrapper"> -->
           <!-- <input 
             type="text" 
             id="text-input" 
             placeholder="Type your message or use voice..."
             autocomplete="off"
           /> -->
-          <button id="voice-btn" class="voice-button" title="Hold to speak">
+          <!-- <button id="voice-btn" class="voice-button" title="Hold to speak">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button> -->
+          <!-- <button id="send-btn" class="send-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button> -->
+        <!-- </div>  -->
+        
+        <!-- Agent Speaking Indicator -->
+        
+                <div class="cta-box">
+                    <button class="cta-button" id="startChapterBtn">
+                        <span>▶</span>
+                        <span id="chapterBtnText">Start Chapter 1</span>
+                    </button>
+                </div>
+                  <button id="voice-btn" class="voice-button" title="Hold to speak">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
-          <!-- <button id="send-btn" class="send-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button> -->
-        </div> 
-        
-        <!-- Agent Speaking Indicator -->
-        <div id="agent-speaking" class="agent-speaking" style="display: none;">
+          <div id="agent-speaking" class="agent-speaking" style="display: none;">
           <div class="speaking-indicator">
             <span class="wave"></span>
             <span class="wave"></span>
@@ -175,12 +189,6 @@
           <button id="interrupt-btn" class="interrupt-button">Stop</button>
         </div>
        </div>
-                <div class="cta-box">
-                    <button class="cta-button" id="startChapterBtn">
-                        <span>▶</span>
-                        <span id="chapterBtnText">Start Chapter 1</span>
-                    </button>
-                </div>
             </div>
 
             <!-- Chapter Screen -->

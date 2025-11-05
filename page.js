@@ -67,7 +67,7 @@ if (continuepage) {
                     {
                         number: 2,
                         total: 8,
-                        title: 'Accelerates <span class="highlight">Data Synthesis</span>',
+                        title: ' Think Like an Expert',
                         subtitle: 'Explore how Alqamist rapidly synthesizes disparate data sources for faster insights.',
                         questions: [
                             { icon: '🧪', color: 'blue', text: 'How does it merge lab results with trial data?' },
@@ -83,7 +83,7 @@ if (continuepage) {
                     {
                         number: 3,
                         total: 8,
-                        title: 'Ensures <span class="highlight">Regulatory Compliance</span>',
+                        title: 'Picks the Best Tools Automatically',
                         subtitle: 'A deep dive into how Alqamist applies regulatory rules to the research protocol.',
                         questions: [
                             { icon: '📋', color: 'blue', text: 'Which regulations apply to this trial phase?' },
@@ -99,7 +99,7 @@ if (continuepage) {
                     {
                         number: 4,
                         total: 8,
-                        title: 'Modeling <span class="highlight">Molecular Interactions</span>',
+                        title: 'Plans Ahead and Adapts',
                         subtitle: 'Visualizing and understanding the drug\'s molecular mechanism of action.',
                         questions: [
                             { icon: '🔬', color: 'blue', text: 'Explain the drug\'s primary target mechanism.' },
@@ -115,7 +115,7 @@ if (continuepage) {
                     {
                         number: 5,
                         total: 8,
-                        title: 'Drafting <span class="highlight">Medical Documents</span>',
+                        title: 'Works Like a Team',
                         subtitle: 'How Alqamist assists in creating accurate and detailed medical writing.',
                         questions: [
                             { icon: '📝', color: 'blue', text: 'Draft a section of the Investigator’s Brochure.' },
@@ -131,7 +131,7 @@ if (continuepage) {
                     {
                         number: 6,
                         total: 8,
-                        title: 'Optimizing <span class="highlight">Pharmacovigilance</span>',
+                        title: 'Explains its Thinking',
                         subtitle: 'Monitoring and assessing drug safety profiles during clinical development.',
                         questions: [
                             { icon: '💊', color: 'blue', text: 'Identify all Serious Adverse Events (SAEs).' },
@@ -147,7 +147,7 @@ if (continuepage) {
                     {
                         number: 7,
                         total: 8,
-                        title: 'Preparing <span class="highlight">Final Submission</span>',
+                        title: 'Learns and Improves',
                         subtitle: 'Structuring the immense amount of data for NDA/BLA submission.',
                         questions: [
                             { icon: '📂', color: 'blue', text: 'List the required modules for the eCTD.' },
@@ -163,7 +163,7 @@ if (continuepage) {
                     {
                         number: 8,
                         total: 8,
-                        title: 'The Future of <span class="highlight">Intelligent Research</span>',
+                        title: 'Plug and Play',
                         subtitle: 'Looking ahead at how AI will continue to revolutionize drug development.',
                         questions: [
                             { icon: '🔮', color: 'blue', text: 'What is the next big thing in AI for trials?' },
@@ -543,7 +543,8 @@ if (continuepage) {
             // Update button text for Chapter 1
             const chapter1Data = data.chapters[0];
             document.getElementById('chapterBtnText').textContent = `Start Chapter ${chapter1Data.number} – ${chapter1Data.title.replace(/<[^>]*>/g, '')}`;
-        }
+              
+          }
 
         function renderChapter(scenarioId, chapterIndex) {
             const chapterData = scenarioData[scenarioId].chapters[chapterIndex];
@@ -570,10 +571,11 @@ if (continuepage) {
             if (currentChapterIndex < totalChapters - 1) {
 
               console.log(">>>>>>>", scenarioData[currentScenario].chapters[currentChapterIndex].question)
-              AskQuestion(scenarioData[currentScenario].chapters[currentChapterIndex].question)
+    
                 // Move to the next chapter
                 currentChapterIndex++;
                 renderChapter(currentScenario, currentChapterIndex);
+                          AskQuestion(scenarioData[currentScenario].chapters[currentChapterIndex].question)
                 navigateTo(3); // Stay on the chapter screen
             } else {
                 // Completed all chapters, go back to home screen (Screen 1)
@@ -620,6 +622,7 @@ if (continuepage) {
             document.getElementById('startChapterBtn').addEventListener('click', () => {
                 if (currentScenario) {
                     currentChapterIndex = 0; // Always start at Chapter 1 when clicking "Start Chapter"
+                     AskQuestion(scenarioData[currentScenario].chapters[0].question)
                     renderChapter(currentScenario, currentChapterIndex);
                     navigateTo(3);
                 }
