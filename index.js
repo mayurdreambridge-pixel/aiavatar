@@ -725,15 +725,30 @@ function addMessage(content, role) {
   // messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+let speakingTimeout = null;
+
 function showAgentSpeaking() {
+  // Clear any pending hide timeout
+  if (speakingTimeout) {
+    clearTimeout(speakingTimeout);
+    speakingTimeout = null;
+  }
   // agentSpeaking.style.display = 'flex';
   isAgentSpeaking = true;
 }
 
 function hideAgentSpeaking() {
-  // agentSpeaking.style.display = 'none';
-  isAgentSpeaking = false;
-  isVideoInitialized= false;
+  // Add a small delay before hiding to prevent flicker
+  // This smooths out rapid START/STOP cycles
+  if (speakingTimeout) {
+    clearTimeout(speakingTimeout);
+  }
+  
+  speakingTimeout = setTimeout(() => {
+    // agentSpeaking.style.display = 'none';
+    isAgentSpeaking = false;
+    speakingTimeout = null;
+  }, 300); // 300ms delay prevents flicker
 }
 
 // ============================================
@@ -837,13 +852,9 @@ const callbacks = {
   onVideoStateChange(state) {
     console.log('🎥 Video state:', state);
     
-    // In Fluent mode, the video is always playing
-    // Just handle the visual feedback
-    if (state === 'START') {
-      showAgentSpeaking();
-    } else if (state === 'STOP') {
-      hideAgentSpeaking();
-    }
+    // In Fluent mode, the video starts/stops for each speech segment
+    // This is normal behavior - DON'T update UI here as it causes flicker
+    // Use onAgentActivityStateChange instead for smooth UI updates
   },
 
   // Agent activity state (TALKING/IDLE)
