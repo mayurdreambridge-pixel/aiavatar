@@ -205,7 +205,7 @@ continueButton.addEventListener('click', async () => {
                             { icon: '📂', color: 'blue', text: 'List the required modules for the eCTD.' },
                             { icon: '📈', color: 'green', text: 'Check the completeness of the statistical analysis.' },
                             { icon: '📝', color: 'orange', text: 'Generate the Executive Summary.' },
-                            { icon: '✅', color: 'red', text: 'Verify all documents are version controlled.' }
+                            // { icon: '✅', color: 'red', text: 'Verify all documents are version controlled.' }
                         ],
                         nextChapterDesc: 'Chapter 8: The future of intelligent life sciences research.',
                         continueBtn: 'Continue with Chapter 7',
