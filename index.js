@@ -12,15 +12,66 @@ const continuepage = document.getElementById('continuepage');
 const mainPage = document.getElementById('mainPage');
 
 let isAgentLoaded = false;
+let isVideoStreamReady = false; // Track if video stream has started
 
-continueButton.addEventListener('click', () => {
-if (continuepage) {
-    continuepage.style.display = 'none'; // Hides continuePage
+// Preset video configuration for each scenario
+const presetVideos = {
+  medical: './assets/life_senario.mp4', // Replace with your actual video URL
+  manufacturing: 'https://your-video-url.com/manufacturing-intro.mp4',
+  technology: 'https://your-video-url.com/technology-intro.mp4'
+};
+
+// Track current video state
+let isPresetVideoPlaying = false;
+
+continueButton.addEventListener('click', async () => {
+  // Initialize agent on first click if not already loaded
+  if (!isAgentLoaded) {
+    continueButton.textContent = 'Connecting...';
+    continueButton.disabled = true;
+    
+    await initializeAgent();
+    
+    // Wait for video stream to be ready (with timeout)
+    let attempts = 0;
+    while (!isVideoStreamReady && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!isVideoStreamReady) {
+      console.warn('⚠️ Video stream not ready after timeout, continuing anyway');
+    }
+    
+    continueButton.textContent = 'Continue';
+    continueButton.disabled = false;
+  }
+  
+  // Only allow transition if video stream is ready
+  if (!isVideoStreamReady && isAgentLoaded) {
+    console.log('⏳ Waiting for video stream to be ready...');
+    continueButton.textContent = 'Loading video...';
+    continueButton.disabled = true;
+    return;
+  }
+  
+  // Proceed with transition
+  if (continuepage) {
+    continuepage.style.display = 'none';
   }
   if (mainPage) {
-    mainPage.style.display = 'block'; // Hides mainPage
+    mainPage.style.display = 'block';
   }
-  introducer()
+  
+  // Ensure video container is visible
+  const appContainer = document.getElementById('app-container');
+  if (appContainer) {
+    appContainer.style.opacity = '1';
+    appContainer.style.transition = 'opacity 0.3s ease';
+  }
+  
+  // Now introduce the agent
+  introducer();
 });
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
@@ -605,15 +656,28 @@ if (continuepage) {
             // Back button visible for screens 2 (Scenario) and 3 (Chapter)
             backBtn.classList.toggle('visible', screenNum > 1);
 
+            // Return to live video when going back to home screen
+            if (screenNum === 1 && isPresetVideoPlaying) {
+                returnToLiveVideo();
+            }
+
             document.querySelector('.content-section').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+
         function setupEventListeners() {
             // Domain cards
-            document.getElementById('domainCards').addEventListener('click', (e) => {
+            document.getElementById('domainCards').addEventListener('click', async (e) => {
                 const card = e.target.closest('.domain-card');
                 if (card) {
                     const domainId = card.dataset.domain;
+                    
+                    // Trigger preset video if available for this scenario
+                    if (presetVideos[domainId]) {
+                        console.log(`🎬 Playing preset video for ${domainId}`);
+                        await playPresetVideo(presetVideos[domainId]);
+                    }
+                    
                     renderScenario(domainId);
                     navigateTo(2);
                 }
@@ -634,9 +698,18 @@ if (continuepage) {
             document.getElementById('startChapterBtn').addEventListener('click', () => {
                 if (currentScenario) {
                     currentChapterIndex = 0; // Always start at Chapter 1 when clicking "Start Chapter"
-                     AskQuestion(scenarioData[currentScenario].chapters[0].question)
+                     // AskQuestion(scenarioData[currentScenario].chapters[0].question)
                     renderChapter(currentScenario, currentChapterIndex);
                     navigateTo(3);
+                    // If this is the Life Sciences (medical) scenario's Chapter 1, play the preset clip
+                    if (currentScenario === 'medical' && currentChapterIndex === 0) {
+                      // Optional: briefly hide the “speaking” UI to avoid any accidental flicker
+                      // showAgentSpeaking()/hideAgentSpeaking() is already managed by callbacks. :contentReference[oaicite:7]{index=7}
+                      playPresetChapterVideo('/assets/life_scenario.mp4');
+                    } else {
+                      // For other chapters/scenarios, fall back to live agent
+                      AskQuestion(scenarioData[currentScenario].chapters[0].question);
+                    }
                 }
             });
 
@@ -666,6 +739,7 @@ if (continuepage) {
 // ============================================
 const appContainer = document.getElementById('app-container');
 const liveVideo = document.getElementById('liveVideo');
+const presetVideo = document.getElementById('presetVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
@@ -693,6 +767,52 @@ let inputtextvalue =""
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
+
+function showLive() {
+  liveVideo.classList.add('shown');  liveVideo.classList.remove('hidden');
+  presetVideo.classList.add('hidden'); presetVideo.classList.remove('shown');
+  // Don't reassign srcObject — you keep the live stream warm. :contentReference[oaicite:5]{index=5}
+}
+
+function showPreset() {
+  presetVideo.classList.add('shown'); presetVideo.classList.remove('hidden');
+  liveVideo.classList.add('hidden');  liveVideo.classList.remove('shown');
+}
+
+function stopPreset() {
+  // Cleanly stop & release the file so next play starts at 0
+  try { presetVideo.pause(); } catch(e){}
+  presetVideo.removeAttribute('src');
+  presetVideo.load();
+  showLive();
+}
+
+async function playPresetChapterVideo(path) {
+  // Make sure agent isn’t speaking & UI doesn’t flicker while the file plays
+  // (We keep the connection alive; just hide the live stream.)
+  showPreset();
+
+  // Resolve path & compat with your original filename if you didn’t rename it
+  const candidates = [
+    path,
+    '/assets/life_scenario.mp4',
+    '/assets/Life%20Senario.mp4', // original name with space
+    'life_scenario.mp4',
+    'Life%20Senario.mp4'
+  ];
+
+  // Pick first that works (best-effort without fetch)
+  presetVideo.src = candidates[0];
+  presetVideo.currentTime = 0;
+  presetVideo.muted = false; // play with sound
+  await presetVideo.play().catch(console.warn);
+
+  // When the clip ends, fade back to live bot
+  presetVideo.onended = () => {
+    stopPreset();
+  };
+}
+
 function showStatus(message) {
   statusText.textContent = message;
   statusToast.classList.add('show');
@@ -809,6 +929,8 @@ const callbacks = {
     
     if (!isVideoInitialized) {
       liveVideo.srcObject = srcObject;
+      liveVideo.classList.add('shown');
+        presetVideo.classList.add('hidden');
       liveVideo.muted = false;
       isVideoInitialized = true;
     }
@@ -852,6 +974,25 @@ const callbacks = {
   onVideoStateChange(state) {
     console.log('🎥 Video state:', state);
     
+    // Set flag when video stream starts
+    if (state === 'START' && !isVideoStreamReady) {
+      isVideoStreamReady = true;
+      console.log('✅ Video stream is now ready');
+      
+      // Make sure app container is visible
+      const appContainer = document.getElementById('app-container');
+      if (appContainer) {
+        appContainer.style.opacity = '1';
+        appContainer.style.transition = 'opacity 0.5s ease';
+      }
+      
+      // Enable continue button if it was disabled
+      if (continueButton && continueButton.disabled) {
+        continueButton.disabled = false;
+        continueButton.textContent = 'Continue';
+      }
+    }
+    
     // In Fluent mode, the video starts/stops for each speech segment
     // This is normal behavior - DON'T update UI here as it causes flicker
     // Use onAgentActivityStateChange instead for smooth UI updates
@@ -893,7 +1034,6 @@ const callbacks = {
 // ============================================
 async function initializeAgent() {
   try {
-        continueButton.style.display = 'none'
     // Validate credentials
     if (!auth.clientKey || auth.clientKey === 'YOUR_CLIENT_KEY_HERE') {
       const message = '⚠️ Missing Client Key!\n\nPlease add your Client Key in main.js:\n1. Go to D-ID Studio\n2. Click your agent → Embed\n3. Copy data-client-key value\n4. Paste in main.js line 11';
@@ -946,7 +1086,10 @@ async function initializeAgent() {
       console.warn('⚠️ Not using Fluent streaming. Premium+ agent required for best experience.');
       showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
     }
-         continueButton.style.display = 'block'
+    
+    // Mark agent as loaded
+    isAgentLoaded = true;
+    console.log('✅ Agent initialized and ready');
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
@@ -986,6 +1129,81 @@ async function introducer() {
     
     }
   }
+}
+
+// ============================================
+// PRESET VIDEO CROSSFADE FUNCTIONS
+// ============================================
+
+/**
+ * Crossfade from live video to preset video
+ * @param {string} videoUrl - URL of the preset video to play
+ */
+async function playPresetVideo(videoUrl) {
+  if (!videoUrl || isPresetVideoPlaying) return;
+  
+  console.log('🎬 Starting preset video crossfade:', videoUrl);
+  
+  try {
+    const liveVideo = document.getElementById('liveVideo');
+    const presetVideo = document.getElementById('presetVideo');
+    
+    // Set the preset video source
+    presetVideo.src = videoUrl;
+    
+    // Wait for video to be loaded
+    await new Promise((resolve, reject) => {
+      presetVideo.onloadeddata = resolve;
+      presetVideo.onerror = reject;
+      presetVideo.load();
+    });
+    
+    // Start crossfade
+    liveVideo.classList.add('fade-out');
+    presetVideo.classList.add('fade-in');
+    
+    // Play preset video
+    await presetVideo.play();
+    isPresetVideoPlaying = true;
+    
+    console.log('✅ Preset video playing');
+    
+    // When preset video ends, crossfade back to live video
+    presetVideo.onended = () => {
+      console.log('🔄 Preset video ended, returning to live video');
+      returnToLiveVideo();
+    };
+    
+  } catch (error) {
+    console.error('❌ Failed to play preset video:', error);
+    // If preset video fails, stay on live video
+    returnToLiveVideo();
+  }
+}
+
+/**
+ * Crossfade back from preset video to live video
+ */
+function returnToLiveVideo() {
+  if (!isPresetVideoPlaying) return;
+  
+  console.log('🔄 Returning to live video');
+  
+  const liveVideo = document.getElementById('liveVideo');
+  const presetVideo = document.getElementById('presetVideo');
+  
+  // Crossfade back
+  presetVideo.classList.remove('fade-in');
+  liveVideo.classList.remove('fade-out');
+  
+  // Pause and reset preset video after fade completes
+  setTimeout(() => {
+    presetVideo.pause();
+    presetVideo.currentTime = 0;
+    presetVideo.src = '';
+    isPresetVideoPlaying = false;
+    console.log('✅ Returned to live video');
+  }, 1000); // Wait for CSS transition to complete
 }
 
 // ============================================
@@ -1129,8 +1347,9 @@ async function unregisterServiceWorkers() {
   // Initialize speech recognition
   initSpeechRecognition();
   
-  // Initialize agent
-  await initializeAgent();
+  // DON'T initialize agent here - wait for continue button click
+  // This prevents the agent from auto-talking on page load
+  console.log('✅ Ready - click Continue to connect to agent');
 })();
 
 
