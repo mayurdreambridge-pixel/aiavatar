@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-     <div id = 'continuepage' class="alqamist-engine">
+     <div id='continuepage' class="alqamist-engine">
         <div class="alqamist-engine__circle alqamist-engine__circle--1"></div>
         <div class="alqamist-engine__circle alqamist-engine__circle--2"></div>
         <div class="alqamist-engine__circle alqamist-engine__circle--3"></div>
@@ -27,93 +27,41 @@
                 <div class="alqamist-engine__step alqamist-engine__step--learn">Learn</div>
             </div>
 
-            <button id ='continueButton' class="alqamist-engine__action-button" >Continue</button>
+            <button id='continueButton' class="alqamist-engine__action-button">Continue</button>
         </div>
     </div>
-    <div  class="container">
+
+    <div class="container">
         <div class="video-section">
             <!-- Connection Status Toast -->
             <div id="status-toast" class="status-toast">
                 <div class="status-content">
-                <div class="status-spinner"></div>
-                <span class="status-text">Connecting...</span>
+                    <div class="status-spinner"></div>
+                    <span class="status-text">Connecting...</span>
                 </div>
             </div>
+
             <!-- Main Container -->
             <div id="app-container" style="opacity: 0;">
-            <!-- Live Video Section -->
-            <div id="video-section">
-                <video id="liveVideo" autoplay playsinline ></video>
-                <video id="presetVideo" playsinline preload="auto"></video>
-                <!-- Agent Info Overlay -->
-                <div class="agent-overlay">
-                <div class="agent-info">
-                <!-- <h1 class="agent-name">The Alqmist</h1>
-                <p class="agent-tagline">Your Genius Partner in Knowledge</p> -->
-                </div>
-                <div class="connection-indicator">
-                    <span class="pulse-dot"></span>
-                    <span id="connection-status">Live</span>
-                </div>
+                <!-- Live Video Section -->
+                <div id="video-section">
+                    <video id="liveVideo" autoplay playsinline></video>
+                    <video id="presetVideo" playsinline preload="auto"></video>
+                    
+                    <!-- Agent Info Overlay -->
+                    <div class="agent-overlay">
+                        <div class="agent-info">
+                            <!-- Agent info can be added here -->
+                        </div>
+                        <div class="connection-indicator">
+                            <span class="pulse-dot"></span>
+                            <span id="connection-status">Live</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- Interactive Panel -->
-            <!-- <div id="interactive-panel"> -->
-      <!-- Voice Input Section -->
-      <!-- <div class="voice-controls"> -->
-        <!-- <div class="input-wrapper">
-          <input 
-            type="text" 
-            id="text-input" 
-            placeholder="Type your message or use voice..."
-            autocomplete="off"
-          />
-          <button id="voice-btn" class="voice-button" title="Hold to speak">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <button id="send-btn" class="send-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div> -->
-        
-        <!-- Agent Speaking Indicator -->
-        <!-- <div id="agent-speaking" class="agent-speaking" style="display: none;">
-          <div class="speaking-indicator">
-            <span class="wave"></span>
-            <span class="wave"></span>
-            <span class="wave"></span>
-          </div>
-          <span class="speaking-text">The Alqmist is speaking...</span>
-          <button id="interrupt-btn" class="interrupt-button">Stop</button>
-        </div> -->
-      <!-- </div> -->
-
-      <!-- Chat History Toggle -->
-      <!-- <button id="history-toggle" class="history-toggle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Chat History
-      </button> -->
-
-      <!-- Chat History Panel -->
-      <!-- <div id="chat-history" class="chat-history">
-        <div class="history-header">
-          <h3>Conversation</h3>
-          <button id="close-history" class="close-btn">×</button>
         </div>
-        <div id="messages-container" class="messages-container"></div>
-      </div> -->
 
-    <!-- </div> -->
-  </div>
-        </div>
         <div class="content-section">
             <button class="back-button" id="backBtn">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -132,65 +80,70 @@
                     Tap and choose a scenario to see how Alqamist<br>
                     reasons across different domains.
                 </p>
+                
+                <!-- Voice Controls on Home Screen -->
+                <div class="voice-controls home-voice-controls">
+                    <button id="voice-btn-home" class="voice-button" title="Hold to speak">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Agent Speaking Indicator -->
+                    <div id="agent-speaking-home" class="agent-speaking" style="display: none;">
+                        <div class="speaking-indicator">
+                            <span class="wave"></span>
+                            <span class="wave"></span>
+                            <span class="wave"></span>
+                        </div>
+                        <span class="speaking-text">The Alqamist is speaking...</span>
+                        <button id="interrupt-btn-home" class="interrupt-button">Stop</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Scenario Screen -->
             <div class="screen" id="screen2">
                 <div class="scenario-header" id="scenarioHeader"></div>
                 <div id="workflowContainer"></div>
+                
                 <div class="questions">
                     <h3>Try asking your Genius Guide:</h3>
                     <div class="question-grid" id="questionGrid"></div>
                 </div>
-                <!-- Voice Input Section -->
-      <div class="voice-controls"> 
-        <!-- <div class="input-wrapper"> -->
-          <!-- <input 
-            type="text" 
-            id="text-input" 
-            placeholder="Type your message or use voice..."
-            autocomplete="off"
-          /> -->
-          <!-- <button id="voice-btn" class="voice-button" title="Hold to speak">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button> -->
-          <!-- <button id="send-btn" class="send-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button> -->
-        <!-- </div>  -->
-        
-        <!-- Agent Speaking Indicator -->
-        
+
                 <div class="cta-box">
                     <button class="cta-button" id="startChapterBtn">
                         <span>▶</span>
                         <span id="chapterBtnText">Start Chapter 1</span>
                     </button>
-                    <button id="voice-btn" class="voice-button" title="Hold to speak">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div id="agent-speaking" class="agent-speaking" style="display: none;">
-          <div class="speaking-indicator">
-            <span class="wave"></span>
-            <span class="wave"></span>
-            <span class="wave"></span>
-          </div>
-          <span class="speaking-text">The Alqmist is speaking...</span>
-          <button id="interrupt-btn" class="interrupt-button">Stop</button>
-        </div>
+                    
+                    <!-- Microphone Controls - IMPROVED AND CENTERED -->
+                    <div class="voice-controls">
+                        <button id="voice-btn" class="voice-button" title="Hold to speak">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Status text will be added dynamically by JavaScript -->
+                        
+                        <!-- Agent Speaking Indicator -->
+                        <div id="agent-speaking" class="agent-speaking" style="display: none;">
+                            <div class="speaking-indicator">
+                                <span class="wave"></span>
+                                <span class="wave"></span>
+                                <span class="wave"></span>
+                            </div>
+                            <span class="speaking-text">The Alqamist is speaking...</span>
+                            <button id="interrupt-btn" class="interrupt-button">Stop</button>
+                        </div>
+                    </div>
                 </div>
-             
-       </div>
             </div>
 
             <!-- Chapter Screen -->
@@ -203,7 +156,7 @@
                 <div class="chapter-content">
                     <h1 id="chapterTitle">Understands <span class="highlight">Complex Work</span></h1>
                     <p class="subtitle" id="chapterSubtitle">
-                        Watch how Alqamist processes and analyzes complex life sciences data through<br>
+                        Watch how Alqamist processes and analyzes complex life sciences data through
                         intelligent reasoning and structured understanding
                     </p>
 
@@ -215,33 +168,41 @@
                     <div class="cta-box">
                         <h3>Ready for the Next Chapter?</h3>
                         <p id="nextChapterDesc">Continue your journey to discover how Alqamist transforms life sciences research</p>
+                        
                         <button class="cta-button" id="continueBtn">
                             <span>→</span>
                             <span id="continueBtnText">Continue with the Life Sciences Journey</span>
                         </button>
-                             <button id="voice-btn" class="voice-button" title="Hold to speak">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div id="agent-speaking" class="agent-speaking" style="display: none;">
-          <div class="speaking-indicator">
-            <span class="wave"></span>
-            <span class="wave"></span>
-            <span class="wave"></span>
-          </div>
-          <span class="speaking-text">The Alqmist is speaking...</span>
-          <button id="interrupt-btn" class="interrupt-button">Stop</button>
-        </div>
+                        
+                        <!-- Microphone Controls - IMPROVED AND CENTERED -->
+                        <div class="voice-controls">
+                            <button id="voice-btn" class="voice-button" title="Hold to speak">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Status text will be added dynamically by JavaScript -->
+                            
+                            <!-- Agent Speaking Indicator -->
+                            <div id="agent-speaking" class="agent-speaking" style="display: none;">
+                                <div class="speaking-indicator">
+                                    <span class="wave"></span>
+                                    <span class="wave"></span>
+                                    <span class="wave"></span>
+                                </div>
+                                <span class="speaking-text">The Alqamist is speaking...</span>
+                                <button id="interrupt-btn" class="interrupt-button">Stop</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    
     <script type="module" src="/index.js"></script>
 </body>
 </html>

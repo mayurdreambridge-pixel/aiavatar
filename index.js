@@ -1,9 +1,13 @@
 import './style.css';
-import { createAgentManager, StreamType } from '@d-id/client-sdk';
-        const auth = { 
-  type: 'key', 
-  clientKey: "YXV0aDB8NjhmZjNmMDEyODZjNmUzNjgzMTdlZDg0OnFFVjNoSkk0NUt1SEJ2VVlFX1lWdg==" // Get this from D-ID Studio
+
+// ============================================
+// D-ID RAW STREAMS API CONFIGURATION  
+// ============================================
+const DID_API = {
+  url: 'https://api.d-id.com',
+  key: "ZGhlZXJhai5kaGF3YW5AZHJlYW1icmlkZ2UuZ2xvYmFs:t2A8bui_EPkp4aVwpTRaf"
 };
+
 let isStartIntroIsDone = false;
 const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
 
@@ -70,8 +74,13 @@ continueButton.addEventListener('click', async () => {
     appContainer.style.transition = 'opacity 0.3s ease';
   }
   
-  // Now introduce the agent
-  introducer();
+  // If connection is already ready, trigger introduction now
+  // Otherwise, it will be triggered when connection becomes ready
+  if (isConnected && !hasIntroduced) {
+    hasIntroduced = true;
+    console.log('🎬 Starting agent introduction (connection already ready)...');
+    setTimeout(() => introducer(), 500); // Small delay to let UI settle
+  }
 });
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
@@ -205,7 +214,7 @@ continueButton.addEventListener('click', async () => {
                             { icon: '📂', color: 'blue', text: 'List the required modules for the eCTD.' },
                             { icon: '📈', color: 'green', text: 'Check the completeness of the statistical analysis.' },
                             { icon: '📝', color: 'orange', text: 'Generate the Executive Summary.' },
-                            // { icon: '✅', color: 'red', text: 'Verify all documents are version controlled.' }
+                            { icon: '✅', color: 'red', text: 'Verify all documents are version controlled.' }
                         ],
                         nextChapterDesc: 'Chapter 8: The future of intelligent life sciences research.',
                         continueBtn: 'Continue with Chapter 7',
@@ -549,21 +558,32 @@ continueButton.addEventListener('click', async () => {
             `).join('');
         }
 
-        function renderScenario(scenarioId) {
+        async function renderScenario(scenarioId) {
             const data = scenarioData[scenarioId];
             currentScenario = scenarioId;
             currentChapterIndex = 0; // Reset to Chapter 1 when a new scenario is selected
             console.log(scenarioId)
+            
+            // INTERRUPT AGENT IMMEDIATELY when navigating to new scenario
+            if (isConnected && isAgentSpeaking && currentVideoId) {
+                try {
+                    await interruptAgent();
+                    console.log('🛑 Agent interrupted for scenario navigation');
+                } catch (error) {
+                    console.error('❌ Failed to interrupt:', error);
+                }
+            }
+            
             if(scenarioId == 'medical')
             {
-              AskQuestion('Give brief about medical')
+              await AskQuestion('Give brief about medical')
             }
             if(scenarioId == 'manufacturing')
               {
-              AskQuestion('Give brief about manufacturing')
+              await AskQuestion('Give brief about manufacturing')
             }
               if(scenarioId == 'finance'){
-              AskQuestion('Give brief about finance')
+              await AskQuestion('Give brief about finance')
             }
             // Scenario Header
             document.getElementById('scenarioHeader').innerHTML = `
@@ -626,7 +646,7 @@ continueButton.addEventListener('click', async () => {
             `).join('');
         }
         
-        function navigateToNextChapter() {
+        async function navigateToNextChapter() {
             if (!currentScenario) return;
 
             const totalChapters = scenarioData[currentScenario].chapters.length;
@@ -635,10 +655,20 @@ continueButton.addEventListener('click', async () => {
 
               console.log(">>>>>>>", scenarioData[currentScenario].chapters[currentChapterIndex].question)
     
+                // INTERRUPT AGENT IMMEDIATELY before moving to next chapter
+                if (isConnected && isAgentSpeaking && currentVideoId) {
+                    try {
+                        await interruptAgent();
+                        console.log('🛑 Agent interrupted for chapter navigation');
+                    } catch (error) {
+                        console.error('❌ Failed to interrupt:', error);
+                    }
+                }
+    
                 // Move to the next chapter
                 currentChapterIndex++;
                 renderChapter(currentScenario, currentChapterIndex);
-                          AskQuestion(scenarioData[currentScenario].chapters[currentChapterIndex].question)
+                          await AskQuestion(scenarioData[currentScenario].chapters[currentChapterIndex].question)
                 navigateTo(3); // Stay on the chapter screen
             } else {
                 // Completed all chapters, go back to home screen (Screen 1)
@@ -675,10 +705,10 @@ continueButton.addEventListener('click', async () => {
                     // Trigger preset video if available for this scenario
                     if (presetVideos[domainId]) {
                         console.log(`🎬 Playing preset video for ${domainId}`);
-                        await playPresetVideo(presetVideos[domainId]);
+                        // await playPresetVideo(presetVideos[domainId]);
                     }
                     
-                    renderScenario(domainId);
+                    await renderScenario(domainId);
                     navigateTo(2);
                 }
             });
@@ -695,27 +725,18 @@ continueButton.addEventListener('click', async () => {
             });
 
             // Start chapter button
-            document.getElementById('startChapterBtn').addEventListener('click', () => {
+            document.getElementById('startChapterBtn').addEventListener('click', async () => {
                 if (currentScenario) {
-                    currentChapterIndex = 0; // Always start at Chapter 1 when clicking "Start Chapter"
                      // AskQuestion(scenarioData[currentScenario].chapters[0].question)
                     renderChapter(currentScenario, currentChapterIndex);
                     navigateTo(3);
-                    // If this is the Life Sciences (medical) scenario's Chapter 1, play the preset clip
-                    if (currentScenario === 'medical' && currentChapterIndex === 0) {
-                      // Optional: briefly hide the “speaking” UI to avoid any accidental flicker
-                      // showAgentSpeaking()/hideAgentSpeaking() is already managed by callbacks. :contentReference[oaicite:7]{index=7}
-                      playPresetChapterVideo('/assets/life_scenario.mp4');
-                    } else {
-                      // For other chapters/scenarios, fall back to live agent
-                      AskQuestion(scenarioData[currentScenario].chapters[0].question);
-                    }
+                    await AskQuestion(scenarioData[currentScenario].chapters[0].question);
                 }
             });
 
             // Continue button
-            document.getElementById('continueBtn').addEventListener('click', () => {
-                navigateToNextChapter();
+            document.getElementById('continueBtn').addEventListener('click', async () => {
+                await navigateToNextChapter();
             });
 
             // Keyboard navigation
@@ -743,6 +764,13 @@ const presetVideo = document.getElementById('presetVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
+
+// Initialize video states - liveVideo starts shown, presetVideo starts hidden
+liveVideo.classList.add('shown');
+liveVideo.classList.remove('hidden');
+presetVideo.classList.add('hidden');
+presetVideo.classList.remove('shown');
+
  //const textInput = document.getElementById('text-input');
 const voiceBtn = document.getElementById('voice-btn');
 //const sendBtn = document.getElementById('send-btn');
@@ -755,17 +783,106 @@ const agentSpeaking = document.getElementById('agent-speaking');
 const suggestionCards = document.querySelectorAll('.suggestion-card');
 
 // ============================================
-// STATE MANAGEMENT
+// STATE MANAGEMENT (Raw API)
 // ============================================
-let agentManager = null;
+// WebRTC State
+let peerConnection = null;
+let streamId = null;
+let sessionId = null;
+let chatId = null;
+let dataChannel = null; // Direct access! No monkey-patch needed
+let isFluent = false;
+let isStreamReady = false;
+let isStreamPlaying = false;
+
+// UI State
 let isConnected = false;
 let isAgentSpeaking = false;
 let recognition = null;
 let isRecording = false;
-let inputtextvalue =""
+let inputtextvalue = ""
+let currentVideoId = null;
+let hasIntroduced = false; // Track if introduction has been played
+let hasInitialGreeting = false; // NEW: Track if initial short greeting has been given
+let isWaitingForUserResponse = false; // NEW: Track if we're waiting for user's first response
+let isWaitingForStreamEndToIntroduce = false; // NEW: Flag to trigger intro after stream ends
+let micEnabled = true; // NEW: Track if mic is enabled
+let speakingTimeout = null; // NEW: For smooth transitions
 
 // ============================================
-// UTILITY FUNCTIONS
+// MICROPHONE UI STATE MANAGEMENT - NEW
+// ============================================
+function updateMicButtonState(state) {
+  const voiceButtons = document.querySelectorAll('#voice-btn, #voice-btn-home');
+  const statusTexts = document.querySelectorAll('.mic-status-text');
+  
+  voiceButtons.forEach(btn => {
+    // Remove all state classes
+    btn.classList.remove('recording', 'disabled');
+    
+    // Add appropriate class
+    if (state === 'recording') {
+      btn.classList.add('recording');
+    } else if (state === 'disabled') {
+      btn.classList.add('disabled');
+    }
+  });
+  
+  // Update status text
+  statusTexts.forEach(text => {
+    text.classList.remove('recording', 'disabled');
+    
+    if (state === 'recording') {
+      text.textContent = '🎤 Listening...';
+      text.classList.add('recording');
+    } else if (state === 'disabled') {
+      text.textContent = 'AI is speaking...';
+      text.classList.add('disabled');
+    } else {
+      text.textContent = 'Hold to speak';
+    }
+  });
+}
+
+
+// ============================================
+// API HELPER FUNCTIONS
+// ============================================
+async function fetchWithRetry(url, options, retries = 3) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok && retries > 0) {
+      console.warn('Fetch failed, retrying...', url);
+      await new Promise((r) => setTimeout(r, (Math.random() + 1) * 1000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    return res;
+  } catch (err) {
+    if (retries > 0) {
+      console.warn('Fetch error, retrying...', url);
+      await new Promise((r) => setTimeout(r, (Math.random() + 1) * 1000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+}
+
+function stopStream() {
+  const stream = liveVideo.srcObject;
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    liveVideo.srcObject = null;
+  }
+}
+
+function closeConnection() {
+  if (!peerConnection) return;
+  try { peerConnection.close(); } catch { }
+  peerConnection = null;
+  isStreamReady = false;
+  isStreamPlaying = false;
+}
+
 // ============================================
 
 function showLive() {
@@ -845,7 +962,6 @@ function addMessage(content, role) {
   // messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-let speakingTimeout = null;
 
 function showAgentSpeaking() {
   // Clear any pending hide timeout
@@ -853,25 +969,43 @@ function showAgentSpeaking() {
     clearTimeout(speakingTimeout);
     speakingTimeout = null;
   }
-  // agentSpeaking.style.display = 'flex';
+  
   isAgentSpeaking = true;
+  micEnabled = false;
+  
+  // Update mic button to disabled state
+  updateMicButtonState('disabled');
+  
+  // Show agent speaking indicator - including home screen
+  const agentSpeakingDivs = document.querySelectorAll('#agent-speaking, #agent-speaking-home');
+  agentSpeakingDivs.forEach(div => {
+    div.style.display = 'flex';
+  });
 }
 
 function hideAgentSpeaking() {
   // Add a small delay before hiding to prevent flicker
-  // This smooths out rapid START/STOP cycles
   if (speakingTimeout) {
     clearTimeout(speakingTimeout);
   }
   
   speakingTimeout = setTimeout(() => {
-    // agentSpeaking.style.display = 'none';
     isAgentSpeaking = false;
+    micEnabled = true;
+    
+    // Update mic button to idle state
+    updateMicButtonState('idle');
+    
+    // Hide agent speaking indicator - including home screen
+    const agentSpeakingDivs = document.querySelectorAll('#agent-speaking, #agent-speaking-home');
+    agentSpeakingDivs.forEach(div => {
+      div.style.display = 'none';
+    });
+    
     speakingTimeout = null;
   }, 300); // 300ms delay prevents flicker
 }
 
-// ============================================
 // SPEECH RECOGNITION SETUP
 // ============================================
 function initSpeechRecognition() {
@@ -887,12 +1021,11 @@ function initSpeechRecognition() {
   recognition.interimResults = false;
   recognition.lang = 'en-US';
 
-  recognition.onstart = () => {
-    isRecording = true;
-     voiceBtn.classList.add('recording');
-   // textInput.placeholder = 'Listening...';
-       inputtextvalue = 'Listening...';
-  };
+    recognition.onstart = () => {
+      isRecording = true;
+      updateMicButtonState('recording'); // NEW: Update visual state
+      inputtextvalue = 'Listening...';
+    };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
@@ -902,338 +1035,510 @@ function initSpeechRecognition() {
   };
 
   recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
-    isRecording = false;
-     voiceBtn.classList.remove('recording');
-   // textInput.placeholder = 'Type your message or use voice...';
+      console.error('Speech recognition error:', event.error);
+      isRecording = false;
+      updateMicButtonState('idle'); // NEW: Update visual state
       inputtextvalue = 'Type your message or use voice...';
-
-  };
+    };
 
   recognition.onend = () => {
-    isRecording = false;
-     voiceBtn.classList.remove('recording');
-   // textInput.placeholder = 'Type your message or use voice...';
-     inputtextvalue = 'Type your message or use voice...';
-  };
+      isRecording = false;
+      if (!isAgentSpeaking) {
+        updateMicButtonState('idle'); // NEW: Update visual state
+      }
+      inputtextvalue = 'Type your message or use voice...';
+    };
 }
 
 // ============================================
-// AGENT SDK CALLBACKS
-// ============================================
-let isVideoInitialized = false;
-
-const callbacks = {
-  onSrcObjectReady(srcObject) {
-    console.log('✅ Video stream ready');
-    
-    if (!isVideoInitialized) {
-      liveVideo.srcObject = srcObject;
-      liveVideo.classList.add('shown');
-        presetVideo.classList.add('hidden');
-      liveVideo.muted = false;
-      isVideoInitialized = true;
-    }
-    
-    return srcObject;
-  },
-
-  // Connection state changes
-  onConnectionStateChange(state) {
-    console.log('🔌 Connection state:', state);
-    
-    switch(state) {
-      case 'connecting':
-        showStatus('Connecting to agent...');
-        updateConnectionStatus('Connecting...', false);
-        break;
-        
-      case 'connected':
-        hideStatus();
-        updateConnectionStatus('Live', true);
-        isConnected = true;
-        
-        // Show the app with smooth fade-in
-        setTimeout(() => {
-          appContainer.classList.add('loaded');
-        }, 300);
-        
-        console.log('✅ Agent connected and ready!');
-        break;
-        
-      case 'disconnected':
-      case 'closed':
-        updateConnectionStatus('Disconnected', false);
-        isConnected = false;
-        showStatus('Connection lost. Refresh to reconnect.');
-        break;
-    }
-  },
-
-  // Video state changes (Fluent streaming)
-  onVideoStateChange(state) {
-    console.log('🎥 Video state:', state);
-    
-    // Set flag when video stream starts
-    if (state === 'START' && !isVideoStreamReady) {
-      isVideoStreamReady = true;
-      console.log('✅ Video stream is now ready');
-      
-      // Make sure app container is visible
-      const appContainer = document.getElementById('app-container');
-      if (appContainer) {
-        appContainer.style.opacity = '1';
-        appContainer.style.transition = 'opacity 0.5s ease';
-      }
-      
-      // Enable continue button if it was disabled
-      if (continueButton && continueButton.disabled) {
-        continueButton.disabled = false;
-        continueButton.textContent = 'Continue';
-      }
-    }
-    
-    // In Fluent mode, the video starts/stops for each speech segment
-    // This is normal behavior - DON'T update UI here as it causes flicker
-    // Use onAgentActivityStateChange instead for smooth UI updates
-  },
-
-  // Agent activity state (TALKING/IDLE)
-  onAgentActivityStateChange(state) {
-    console.log('🗣️ Agent activity:', state);
-    
-    if (state === 'TALKING') {
-      showAgentSpeaking();
-    } else {
-      hideAgentSpeaking();
-    }
-  },
-
-  // New messages
-  onNewMessage(messages, type) {
-    console.log('💬 New message:', messages, type);
-    
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage) return;
-
-    if (lastMessage.role === 'assistant' && type === 'answer') {
-      addMessage(lastMessage.content, 'agent');
-    }
-  },
-
-  // Error handling
-  onError(error, errorData) {
-    console.error('❌ Error:', error, errorData);
-    showStatus('Something went wrong. Please try again.');
-    updateConnectionStatus('Error', false);
-  }
-};
-
-// ============================================
-// AGENT MANAGER SETUP
+// RAW STREAMS API - AGENT INITIALIZATION
 // ============================================
 async function initializeAgent() {
   try {
-    // Validate credentials
-    if (!auth.clientKey || auth.clientKey === 'YOUR_CLIENT_KEY_HERE') {
-      const message = '⚠️ Missing Client Key!\n\nPlease add your Client Key in main.js:\n1. Go to D-ID Studio\n2. Click your agent → Embed\n3. Copy data-client-key value\n4. Paste in main.js line 11';
-      alert(message);
-      console.error(message);
-      return;
+    console.log('🚀 Connecting to Agent using Raw Streams API...');
+    showStatus('Connecting to agent...');
+    updateConnectionStatus('Connecting...', false);
+    
+    // Clean up any existing connections
+    stopStream();
+    closeConnection();
+
+    // ========================================
+    // STEP 1: Fetch Agent Info
+    // ========================================
+    console.log('📋 Fetching agent info...');
+    const resAgent = await fetch(`${DID_API.url}/agents/${agentId}`, {
+      method: 'GET',
+      headers: { 
+        'Authorization': `Basic ${DID_API.key}`,
+        'Content-Type': 'application/json' 
+      }
+    });
+    
+    if (!resAgent.ok) {
+      throw new Error(`Failed to fetch agent: ${resAgent.status} ${resAgent.statusText}`);
     }
     
-    if (!agentId || agentId === 'YOUR_AGENT_ID_HERE') {
-      const message = '⚠️ Missing Agent ID!\n\nPlease add your Agent ID in main.js:\n1. Go to D-ID Studio\n2. Click your agent → Embed\n3. Copy data-agent-id value\n4. Paste in main.js line 13';
-      alert(message);
-      console.error(message);
-      return;
+    const agentData = await resAgent.json();
+    console.log('✅ Agent loaded:', agentData.preview_name);
+
+    // ========================================
+    // STEP 2: Create Chat Session
+    // ========================================
+    console.log('💬 Creating chat session...');
+    const resChat = await fetch(`${DID_API.url}/agents/${agentId}/chat`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Basic ${DID_API.key}`,
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({ persist: true })
+    });
+    
+    if (!resChat.ok) {
+      throw new Error(`Failed to create chat: ${resChat.status}`);
+    }
+    
+    const chatData = await resChat.json();
+    chatId = chatData.id;
+    console.log('✅ Chat session created:', chatId);
+
+    // ========================================
+    // STEP 3: Create Stream Session
+    // ========================================
+    console.log('🎥 Creating stream session...');
+    const streamOptions = { 
+      compatibility_mode: 'on', 
+      fluent: true  // Enable fluent for Premium+ agents
+    };
+    
+    const resStream = await fetchWithRetry(
+      `${DID_API.url}/agents/${agentId}/streams`,
+      {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${DID_API.key}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(streamOptions)
+      }
+    );
+    
+    if (!resStream.ok) {
+      throw new Error(`Failed to create stream: ${resStream.status}`);
+    }
+    
+    const streamData = await resStream.json();
+    console.log('📊 Stream response data:', JSON.stringify(streamData, null, 2));
+    streamId = streamData.id;
+    sessionId = streamData.session_id;
+    isFluent = !!streamData.fluent;
+    
+    console.log('✅ Stream created:', streamId);
+    console.log('✅ Session ID:', sessionId);
+    console.log('✅ Fluent mode:', isFluent);
+    
+    if (!isFluent) {
+      console.warn('⚠️ Not in Fluent mode. Interruption requires Premium+ agent.');
     }
 
-    console.log('📋 Credentials validated');
-    console.log('🔑 Client Key:', auth.clientKey.substring(0, 20) + '...');
-    console.log('🤖 Agent ID:', agentId);
-
-    showStatus('Initializing agent...');
-
-    // Stream options for seamless Fluent streaming
-    const streamOptions = {
-      compatibilityMode: 'on',
-      streamWarmup: true,
-      fluent: true  // CRITICAL: Enables seamless single-stream video
-    };
-
-    console.log('📦 Creating agent manager...');
-
-    // Create agent manager
-    agentManager = await createAgentManager(agentId, {
-      auth,
-      callbacks,
-      streamOptions
+    // ========================================
+    // STEP 4: Set Up WebRTC Peer Connection
+    // ========================================
+    console.log('🔌 Setting up WebRTC connection...');
+    
+    const RTCPeerConnectionCtor = 
+      window.RTCPeerConnection || 
+      window.webkitRTCPeerConnection || 
+      window.mozRTCPeerConnection;
+    
+    peerConnection = new RTCPeerConnectionCtor({ 
+      iceServers: streamData.ice_servers 
     });
 
-    console.log('✅ Agent Manager created:', agentManager);
+    // ========================================
+    // ICE Candidate Handler
+    // ========================================
+    peerConnection.addEventListener('icecandidate', (event) => {
+      const body = event.candidate
+        ? { 
+            candidate: event.candidate.candidate, 
+            sdpMid: event.candidate.sdpMid, 
+            sdpMLineIndex: event.candidate.sdpMLineIndex 
+          }
+        : {};
+      
+      fetch(`${DID_API.url}/agents/${agentId}/streams/${streamId}/ice`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${DID_API.key}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ session_id: sessionId, ...body })
+      });
+      
+      console.log('🧊 ICE candidate sent');
+    });
 
-    // Connect to agent
-    showStatus('Connecting to agent...');
-    console.log('🔌 Connecting to agent...');
+    // ========================================
+    // Connection State Handler
+    // ========================================
+    peerConnection.addEventListener('connectionstatechange', () => {
+      console.log('🔌 Connection state:', peerConnection.connectionState);
+      
+      switch(peerConnection.connectionState) {
+        case 'connecting':
+          updateConnectionStatus('Connecting...', false);
+          break;
+          
+        case 'connected':
+          setTimeout(() => {
+            if (!isStreamReady) isStreamReady = true;
+            isConnected = true;
+            updateConnectionStatus('Live', true);
+            hideStatus();
+            
+            // Show app with fade-in
+            const appContainer = document.getElementById('app-container');
+            if (appContainer) {
+              appContainer.classList.add('loaded');
+            }
+            
+            console.log('✅ Agent connected and ready!');
+            
+            // Call introducer if user has entered main experience and haven't introduced yet
+            const continuepage = document.getElementById('continuepage');
+            if (continuepage && continuepage.style.display === 'none' && !hasIntroduced) {
+              hasIntroduced = true;
+              console.log('🎬 Starting agent introduction...');
+              introducer();
+            }
+          }, 300);
+          break;
+          
+        case 'disconnected':
+        case 'closed':
+          updateConnectionStatus('Disconnected', false);
+          isConnected = false;
+          currentVideoId = null;
+          showStatus('Connection lost. Refresh to reconnect.');
+          break;
+          
+        case 'failed':
+          stopStream();
+          closeConnection();
+          break;
+      }
+    });
+
+    // ========================================
+    // Track Handler (Video/Audio Stream)
+    // ========================================
+    peerConnection.addEventListener('track', (event) => {
+      console.log('📺 Remote track received');
+      const stream = event.streams[0];
+      const [track] = stream.getVideoTracks();
+      if (!track) return;
+
+      // Set video source
+      liveVideo.srcObject = stream;
+      liveVideo.muted = false;
+      liveVideo.classList.add('shown');
+      presetVideo.classList.add('hidden');
+      
+      // Set flag when video starts
+      if (!isVideoStreamReady) {
+        isVideoStreamReady = true;
+        console.log('✅ Video stream is now ready');
+      }
+
+      // Monitor playback state
+      let lastBytes = 0;
+      const interval = setInterval(async () => {
+        if (!peerConnection || peerConnection.connectionState === 'closed') {
+          clearInterval(interval);
+          return;
+        }
+        
+        try {
+          const receiver = peerConnection.getReceivers().find((r) => r.track === track);
+          if (!receiver) return;
+          
+          const stats = await receiver.getStats();
+          stats.forEach((report) => {
+            if (report.type === 'inbound-rtp' && report.kind === 'video') {
+              const nowPlaying = report.bytesReceived > lastBytes;
+              if (nowPlaying !== isStreamPlaying) {
+                isStreamPlaying = nowPlaying;
+                console.log('🎬 Stream playing state:', isStreamPlaying);
+              }
+              lastBytes = report.bytesReceived;
+            }
+          });
+        } catch (e) {
+          // Ignore stats errors
+        }
+      }, 400);
+    });
+
+    // ========================================
+    // Data Channel (CRITICAL FOR INTERRUPTION!)
+    // ========================================
+    dataChannel = peerConnection.createDataChannel('JanusDataChannel');
+    console.log('📡 Data channel created');
     
-    await agentManager.connect();
+    dataChannel.onopen = () => {
+      console.log('🔓 Data channel opened!');
+    };
+    
+    dataChannel.onclose = () => {
+      console.log('🔒 Data channel closed');
+      dataChannel = null;
+    };
+    
+    dataChannel.onmessage = (event) => {
+      let msg = event.data;
+      console.log('📨 Data channel message:', msg);
+      
+      // Chat answers
+      if (msg.includes('chat/answer')) {
+        msg = decodeURIComponent(msg.replace('chat/answer:', ''));
+        console.log('💬 Agent:', msg);
+      }
+      
+      // Track when agent starts speaking (for interruption!)
+      if (msg.includes('stream/started')) {
+        if (isFluent) {
+          try {
+            const match = msg.match(/{.*}/);
+            if (match) {
+              const data = JSON.parse(match[0]);
+              currentVideoId = data.metadata?.videoId;
+              console.log('📹 Video started, ID:', currentVideoId);
+              showAgentSpeaking();
+            }
+          } catch (error) {
+            console.error('Failed to parse stream/started:', error);
+          }
+        }
+      }
+      
+      // Reset when agent finishes speaking
+      if (msg.includes('stream/done')) {
+        console.log('📹 Video done, clearing ID');
+        currentVideoId = null;
+        hideAgentSpeaking();
 
-    const streamType = agentManager.getStreamType();
-    console.log('📡 Stream Type:', streamType);
+        // NEW: Check if we need to trigger the full introduction now
+        if (isWaitingForStreamEndToIntroduce) {
+          console.log('🎬 Stream done, triggering full introduction now...');
+          isWaitingForStreamEndToIntroduce = false; // Reset flag
+          sendFullIntroduction(); // Call the intro function
+        }
+      }
+    };
 
-    if (streamType !== StreamType.Fluent) {
-      console.warn('⚠️ Not using Fluent streaming. Premium+ agent required for best experience.');
-      showStatus('Connected (using legacy mode - upgrade to Premium+ for Fluent)');
+    // ========================================
+    // STEP 5: Exchange SDP (WebRTC Handshake)
+    // ========================================
+    await peerConnection.setRemoteDescription(streamData.offer);
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    console.log('📤 Sending local SDP answer...');
+    const resSdp = await fetch(
+      `${DID_API.url}/agents/${agentId}/streams/${streamId}/sdp`,
+      {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${DID_API.key}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          answer: answer,
+          session_id: sessionId
+        })
+      }
+    );
+    
+    if (!resSdp.ok) {
+      throw new Error(`Failed to send SDP answer: ${resSdp.status}`);
     }
     
+    console.log('✅ SDP exchange complete');
+
     // Mark agent as loaded
     isAgentLoaded = true;
-    console.log('✅ Agent initialized and ready');
+    console.log('✅✅✅ Agent initialization complete!');
 
   } catch (error) {
     console.error('❌ Failed to initialize agent:', error);
     
-    // Provide specific error messages
-    let errorMessage = 'Failed to connect. ';
-    
-    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-      errorMessage += 'Network error - please check:\n\n';
-      errorMessage += '1. Your credentials are correct\n';
-      errorMessage += '2. Your agent exists in D-ID Studio\n';
-      errorMessage += '3. Try refreshing the page\n';
-      errorMessage += '4. Check browser console for details';
+    let errorMessage = 'Failed to connect to agent. ';
+    if (error.message.includes('fetch')) {
+      errorMessage += 'Network error - check your internet connection.';
     } else if (error.message.includes('401') || error.message.includes('403')) {
-      errorMessage += 'Authentication failed - check your Client Key';
-    } else if (error.message.includes('404')) {
-      errorMessage += 'Agent not found - check your Agent ID';
+      errorMessage += 'Authentication failed - check your API key.';
     } else {
       errorMessage += error.message;
     }
-    showStatus(errorMessage);
-    alert(errorMessage);
-  }
-}
-
-async function introducer() {
-  if(!isStartIntroIsDone)
-  {
-    isStartIntroIsDone = true;
-  if (!isConnected) return;
-    try {
-      await agentManager.chat("introduce yourself as The Alqmist");
-  
-    } catch (error) {
-      console.error('❌ Failed to send suggestion:', error);
-    } finally {
     
+    showStatus(errorMessage);
+    updateConnectionStatus('Error', false);
+    
+    // Re-enable button so user can retry
+    if (continueButton) {
+      continueButton.disabled = false;
+      continueButton.textContent = 'Retry Connection';
     }
   }
 }
 
-// ============================================
-// PRESET VIDEO CROSSFADE FUNCTIONS
-// ============================================
-
-/**
- * Crossfade from live video to preset video
- * @param {string} videoUrl - URL of the preset video to play
- */
-async function playPresetVideo(videoUrl) {
-  if (!videoUrl || isPresetVideoPlaying) return;
-  
-  console.log('🎬 Starting preset video crossfade:', videoUrl);
-  
-  try {
-    const liveVideo = document.getElementById('liveVideo');
-    const presetVideo = document.getElementById('presetVideo');
-    
-    // Set the preset video source
-    presetVideo.src = videoUrl;
-    
-    // Wait for video to be loaded
-    await new Promise((resolve, reject) => {
-      presetVideo.onloadeddata = resolve;
-      presetVideo.onerror = reject;
-      presetVideo.load();
-    });
-    
-    // Start crossfade
-    liveVideo.classList.add('fade-out');
-    presetVideo.classList.add('fade-in');
-    
-    // Play preset video
-    await presetVideo.play();
-    isPresetVideoPlaying = true;
-    
-    console.log('✅ Preset video playing');
-    
-    // When preset video ends, crossfade back to live video
-    presetVideo.onended = () => {
-      console.log('🔄 Preset video ended, returning to live video');
-      returnToLiveVideo();
-    };
-    
-  } catch (error) {
-    console.error('❌ Failed to play preset video:', error);
-    // If preset video fails, stay on live video
-    returnToLiveVideo();
-  }
-}
-
-/**
- * Crossfade back from preset video to live video
- */
-function returnToLiveVideo() {
-  if (!isPresetVideoPlaying) return;
-  
-  console.log('🔄 Returning to live video');
-  
-  const liveVideo = document.getElementById('liveVideo');
-  const presetVideo = document.getElementById('presetVideo');
-  
-  // Crossfade back
-  presetVideo.classList.remove('fade-in');
-  liveVideo.classList.remove('fade-out');
-  
-  // Pause and reset preset video after fade completes
-  setTimeout(() => {
-    presetVideo.pause();
-    presetVideo.currentTime = 0;
-    presetVideo.src = '';
-    isPresetVideoPlaying = false;
-    console.log('✅ Returned to live video');
-  }, 1000); // Wait for CSS transition to complete
-}
 
 // ============================================
-// MESSAGE HANDLING
+// MESSAGE HANDLING (Raw API)
 // ============================================
 async function sendMessage(message) {
-  if (!isConnected || !message.trim()) return;
-
+  if (!isConnected || !chatId || !streamId) {
+    console.warn('⚠️ Cannot send message - not connected');
+    return;
+  }
+  
   try {
-    addMessage(message, 'user');
-   // textInput.value = '';
-     inputtextvalue = '';
-   // sendBtn.disabled = true;
-
-    // Send chat message to agent
-    await agentManager.chat(message);
+    console.log('💬 Sending message:', message);
     
-    setTimeout(() => {
-      // sendBtn.disabled = false;
-    }, 500);
-
+    // Try with both possible formats
+    const requestBody = {
+      streamId: streamId,
+      sessionId: sessionId,
+      messages: [{
+        role: 'user',
+        content: message,
+        created_at: new Date().toISOString()
+      }]
+    };
+    
+    console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
+    
+    const response = await fetch(
+      `${DID_API.url}/agents/${agentId}/chat/${chatId}`,
+      {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${DID_API.key}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(requestBody)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ API Error Response:', errorData);
+      throw new Error(`Chat failed: ${response.status} ${response.statusText} - ${errorData}`);
+    }
+    
+    const responseData = await response.json();
+    console.log('✅ Message sent successfully:', responseData);
+    
+    // NEW: If this is the user's first response after initial greeting, trigger full introduction
+    if (isWaitingForUserResponse && !message.startsWith("Say:") && !message.startsWith("Please introduce")) {
+      console.log('🎯 User responded! Setting flag to trigger full introduction after this reply.');
+      isWaitingForUserResponse = false; // Prevent this from firing again
+      isWaitingForStreamEndToIntroduce = true; // Flag for the dataChannel handler
+    }
+    
   } catch (error) {
     console.error('❌ Failed to send message:', error);
-   //  sendBtn.disabled = false;
+    showStatus('Failed to send message. Please try again.');
   }
 }
 
-// ============================================
-// EVENT LISTENERS
-// ============================================
+// Introducer function to trigger initial agent greeting
+async function introducer() {
+  if (!isConnected || !chatId || !streamId) {
+    console.warn('⚠️ Cannot introduce - not connected yet');
+    return;
+  }
+  
+  console.log('👋 Triggering agent introduction...');
+  
+  // Send short initial greeting instead of full introduction
+  await sendMessage("Say: Hi there and welcome to The Alqamist – your Interactive Reasoning Partner. How are you today?");
+  hasInitialGreeting = true;
+  isWaitingForUserResponse = true;
+}
+
+// NEW: Full introduction function to be called after user responds
+async function sendFullIntroduction() {
+  if (!isConnected || !chatId || !streamId) {
+    console.warn('⚠️ Cannot send full introduction - not connected yet');
+    return;
+  }
+  
+  console.log('🎬 Sending full introduction...');
+  
+  // Send full introduction prompt
+  // await sendMessage("Please introduce yourself and welcome me to Alqamist with your full introduction.");
+  isWaitingForUserResponse = false;
+}
+
+async function AskQuestion(question) {
+  if (!isConnected) return;
+  
+  // Interrupt if agent is speaking
+  if (isAgentSpeaking && currentVideoId) {
+    try {
+      await interruptAgent();
+      console.log('🛑 Agent interrupted before asking new question');
+    } catch (error) {
+      console.error('❌ Failed to interrupt:', error);
+    }
+  }
+  
+  // Send the question
+  await sendMessage(question);
+}
+
+/**
+ * Interrupt agent using data channel (MUCH SIMPLER NOW!)
+ */
+async function interruptAgent() {
+  if (!currentVideoId) {
+    console.warn('⚠️ No currentVideoId available for interruption');
+    return;
+  }
+  
+  if (!dataChannel) {
+    console.error('❌ Data channel not available');
+    return;
+  }
+  
+  if (dataChannel.readyState !== 'open') {
+    console.error('❌ Data channel is not open. State:', dataChannel.readyState);
+    return;
+  }
+  
+  try {
+    // ✅ Direct and simple! No monkey-patch needed!
+    const interruptMessage = JSON.stringify({
+      type: 'stream/interrupt',
+      videoId: currentVideoId,
+      timestamp: Date.now()
+    });
+    
+    dataChannel.send(interruptMessage);
+    console.log('✅ Interrupt message sent:', interruptMessage);
+    
+    // Clear the video ID
+    currentVideoId = null;
+    hideAgentSpeaking();
+    
+  } catch (error) {
+    console.error('❌ Failed to send interrupt:', error);
+  }
+}
+
 
 // Send button
 // sendBtn.addEventListener('click', () => {
@@ -1254,17 +1559,65 @@ async function sendMessage(message) {
 //   }
 // });
 
-// Voice button
-voiceBtn.addEventListener('click', () => {
-  if (!recognition) return;
+// ============================================
+// VOICE BUTTON - ENHANCED INTERACTION
+// ============================================
+function handleVoiceStart(e) {
+  e.preventDefault();
   
-  if (isRecording) {
-    recognition.stop();
-  } else {
-    recognition.start();
+  // Don't start if agent is speaking or mic is disabled
+  if (isAgentSpeaking || !micEnabled || !recognition) {
+    return;
   }
+
+  if (!isRecording) {
+    try {
+      recognition.start();
+    } catch (error) {
+      console.error('Error starting recognition:', error);
+    }
+  }
+}
+
+function handleVoiceEnd(e) {
+  e.preventDefault();
+  
+  if (recognition && isRecording) {
+    try {
+      recognition.stop();
+    } catch (error) {
+      console.error('Error stopping recognition:', error);
+    }
+  }
+}
+
+// Voice button - ALL instances (there might be multiple on different screens)
+const voiceButtons = document.querySelectorAll('#voice-btn, #voice-btn-home');
+voiceButtons.forEach(btn => {
+  // Desktop events
+  btn.addEventListener('mousedown', handleVoiceStart);
+  btn.addEventListener('mouseup', handleVoiceEnd);
+  btn.addEventListener('mouseleave', handleVoiceEnd);
+  
+  // Mobile events
+  btn.addEventListener('touchstart', handleVoiceStart);
+  btn.addEventListener('touchend', handleVoiceEnd);
 });
 
+// Interrupt buttons - for all screens including home
+const interruptButtons = document.querySelectorAll('#interrupt-btn, #interrupt-btn-home');
+interruptButtons.forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!isConnected || !isAgentSpeaking) return;
+    
+    try {
+      await interruptAgent();
+      console.log('🛑 Agent interrupted');
+    } catch (error) {
+      console.error('❌ Failed to interrupt:', error);
+    }
+  });
+});
 // Interrupt button
 // interruptBtn.addEventListener('click', async () => {
 //   if (!isConnected || !isAgentSpeaking) return;
@@ -1336,6 +1689,25 @@ async function unregisterServiceWorkers() {
 }
 
 // ============================================
+// SETUP MICROPHONE UI
+// ============================================
+function setupMicrophoneUI() {
+  const voiceControls = document.querySelectorAll('.voice-controls');
+  
+  voiceControls.forEach(control => {
+    // Check if status text already exists
+    if (!control.querySelector('.mic-status-text')) {
+      const statusText = document.createElement('div');
+      statusText.className = 'mic-status-text';
+      statusText.textContent = 'Hold to speak';
+      control.appendChild(statusText);
+    }
+  });
+  
+  console.log('✅ Microphone UI setup complete (including home screen)');
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 (async function init() {
@@ -1346,21 +1718,11 @@ async function unregisterServiceWorkers() {
   
   // Initialize speech recognition
   initSpeechRecognition();
+
+  // NEW: Setup microphone UI status text
+  setupMicrophoneUI();
   
   // DON'T initialize agent here - wait for continue button click
   // This prevents the agent from auto-talking on page load
   console.log('✅ Ready - click Continue to connect to agent');
 })();
-
-
-
-async function AskQuestion(question) {
-  if (!isConnected) return;
-    try {
-      await agentManager.chat(question);
-    } catch (error) {
-      console.error('❌ Failed to send suggestion:', error);
-    } finally {
-    
-    }
-}
