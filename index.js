@@ -8,6 +8,22 @@ const DID_API = {
   key: "ZGhlZXJhai5kaGF3YW5AZHJlYW1icmlkZ2UuZ2xvYmFs:t2A8bui_EPkp4aVwpTRaf"
 };
 
+// === Audio Visualizer state ===
+let viz = {
+  ctx: null,
+  analyser: null,
+  data: null,
+  raf: null,
+  rotation: { orb1: 0, orb2: 0, orb3: 0 },
+  el: {
+    ring: null,
+    orb1: null,
+    orb2: null,
+    orb3: null,
+    root: null
+  }
+};
+
 let isStartIntroIsDone = false;
 const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
 
@@ -82,6 +98,10 @@ continueButton.addEventListener('click', async () => {
     setTimeout(() => introducer(), 500); // Small delay to let UI settle
   }
 });
+
+if (viz.ctx && viz.ctx.state === 'suspended') {
+  viz.ctx.resume().catch(console.warn);
+}
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
 
@@ -694,6 +714,98 @@ continueButton.addEventListener('click', async () => {
             document.querySelector('.content-section').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function startViz() {
+  if (!viz.analyser || !viz.data || !viz.el.root) return;
+
+  const center = () => {
+    // center of the overlay in px
+    const rect = viz.el.root.getBoundingClientRect();
+    return { x: rect.width / 2, y: rect.height / 2 };
+  };
+
+// smaller = closer to center
+const orbitFactor = 0.07; 
+const rect = viz.el.root.getBoundingClientRect();
+const orbit = orbitFactor * Math.min(rect.width, rect.height);
+  const toDeg = (rad) => rad * (180 / Math.PI);
+
+  function loop() {
+    viz.analyser.getByteFrequencyData(viz.data);
+
+    // frequency bands (normalize 0..1)
+    const bass   = avg(viz.data.slice(0, 8))   / 255;
+    const mid    = avg(viz.data.slice(8, 32))  / 255;
+    const treble = avg(viz.data.slice(32, 64)) / 255;
+
+    // rotations
+    viz.rotation.orb1 += 0.5;
+    viz.rotation.orb2 -= 0.7;
+    viz.rotation.orb3 += 0.4;
+
+    const c = center();
+
+    // ORB 1 (cyan)
+    if (viz.el.orb1) {
+      const base = 1 + bass * 0.4;
+      const a = viz.rotation.orb1 * Math.PI / 180;
+      const x = c.x + Math.cos(a) * orbit;
+      const y = c.y + Math.sin(a) * orbit;
+      const sx = base * (1 + Math.abs(Math.cos(a)) * 0.3);
+      const sy = base * (1 + Math.abs(Math.sin(a)) * 0.3 + bass * 0.2);
+      viz.el.orb1.style.left = `${x}px`;
+      viz.el.orb1.style.top = `${y}px`;
+      viz.el.orb1.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
+    }
+
+    // ORB 2 (yellow)
+    if (viz.el.orb2) {
+      const base = 1 + mid * 0.5;
+      const a = viz.rotation.orb2 * Math.PI / 180;
+      const x = c.x + Math.cos(a) * orbit;
+      const y = c.y + Math.sin(a) * orbit;
+      const sx = base * (1 + Math.abs(Math.sin(a)) * 0.4 + mid * 0.2);
+      const sy = base * (1 + Math.abs(Math.cos(a)) * 0.4);
+      viz.el.orb2.style.left = `${x}px`;
+      viz.el.orb2.style.top = `${y}px`;
+      viz.el.orb2.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
+    }
+
+    // ORB 3 (purple)
+    if (viz.el.orb3) {
+      const base = 1 + treble * 0.3;
+      const a = viz.rotation.orb3 * Math.PI / 180;
+      const x = c.x + Math.cos(a) * orbit;
+      const y = c.y + Math.sin(a) * orbit;
+      const sx = base * (1 + Math.abs(Math.cos(a + Math.PI / 4)) * 0.35);
+      const sy = base * (1 + Math.abs(Math.sin(a + Math.PI / 4)) * 0.35 + treble * 0.25);
+      viz.el.orb3.style.left = `${x}px`;
+      viz.el.orb3.style.top = `${y}px`;
+      viz.el.orb3.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
+    }
+
+    // ring pulse
+    if (viz.el.ring) {
+      const overall = (bass + mid + treble) / 3;
+      const s = 1 + overall * 0.20;
+      viz.el.ring.style.transform = `translateZ(0) scale(${s})`;
+      viz.el.ring.style.opacity = `${0.30 + overall * 0.40}`;
+    }
+
+    viz.raf = requestAnimationFrame(loop);
+  }
+
+  const avg = (arr) => arr.reduce((a,b)=>a+b,0) / (arr.length || 1);
+  cancelAnimationFrame(viz.raf);
+  viz.raf = requestAnimationFrame(loop);
+}
+
+
+function stopViz() {
+  if (viz.raf) cancelAnimationFrame(viz.raf);
+  viz.raf = null;
+  // optional: viz.ctx?.close(); viz.ctx = null; (keep ctx if you’ll reconnect soon)
+}
+
 
         function setupEventListeners() {
             // Domain cards
@@ -764,6 +876,14 @@ const presetVideo = document.getElementById('presetVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
+
+(function initVizDom() {
+  viz.el.root = document.getElementById('audio-viz');
+  viz.el.ring = document.getElementById('viz-ring');
+  viz.el.orb1 = document.getElementById('viz-orb1');
+  viz.el.orb2 = document.getElementById('viz-orb2');
+  viz.el.orb3 = document.getElementById('viz-orb3');
+})();
 
 // Initialize video states - liveVideo starts shown, presetVideo starts hidden
 liveVideo.classList.add('shown');
@@ -881,6 +1001,8 @@ function closeConnection() {
   peerConnection = null;
   isStreamReady = false;
   isStreamPlaying = false;
+stopViz(); // <— add this line
+
 }
 
 // ============================================
@@ -1242,6 +1364,22 @@ async function initializeAgent() {
 
       // Set video source
       liveVideo.srcObject = stream;
+
+    try {
+      const hasAudio = stream.getAudioTracks && stream.getAudioTracks().length > 0;
+      if (hasAudio && !viz.ctx) {
+        // Create the audio context on user gesture later if needed
+        viz.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const srcNode = viz.ctx.createMediaStreamSource(stream);
+        viz.analyser = viz.ctx.createAnalyser();
+        viz.analyser.fftSize = 256;
+        srcNode.connect(viz.analyser);
+        viz.data = new Uint8Array(viz.analyser.frequencyBinCount);
+        startViz();  // kick off animation loop
+      }
+    } catch (e) {
+      console.warn('Visualizer setup failed:', e);
+    }
       liveVideo.muted = false;
       liveVideo.classList.add('shown');
       presetVideo.classList.add('hidden');

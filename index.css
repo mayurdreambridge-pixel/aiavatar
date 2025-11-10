@@ -18,7 +18,7 @@
 
         .video-section {
             flex: 1;
-            background: white;
+            background: black;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -623,10 +623,9 @@
 }
 
 #liveVideo, #presetVideo {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Voice Controls - IMPROVED */
@@ -840,4 +839,78 @@
 #presetVideo.hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/* === Audio Visualizer (overlay on left video) === */
+:root{
+  --viz-cyan: 190 100% 60%;
+  --viz-yellow: 45 100% 50%;
+  --viz-purple: 270 85% 65%;
+  --viz-glow: 200 100% 60%;
+}
+
+.viz {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;         /* don’t block clicks */
+  display: grid;
+  place-items: center;
+  z-index: 5;                   /* above video, below agent overlay */
+}
+
+.viz-ring {
+  width: min(45vmin, 420px);
+  height: min(45vmin, 420px);
+  border-radius: 9999px;
+  border: 3px solid hsl(var(--viz-glow) / 0.75);
+  background: radial-gradient(circle at 30% 30%,
+    hsl(var(--viz-cyan) / 0.10),
+    hsl(var(--viz-yellow) / 0.10),
+    transparent 70%);
+  box-shadow:
+    0 0 60px hsl(var(--viz-glow) / 0.55),
+    inset 0 0 60px hsl(var(--viz-glow) / 0.65);
+  filter: blur(0.3px);
+  transform: translateZ(0);
+}
+
+.viz-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(0px);
+  transform: translate(-50%, -50%);
+  will-change: transform, left, top;
+}
+
+.viz-orb--cyan {
+  width: min(12vmin, 130px);
+  height: min(12vmin, 130px);
+  background: radial-gradient(circle at 30% 30%,
+    hsl(var(--viz-cyan)),
+    hsl(var(--viz-cyan) / 0.6));
+  box-shadow:
+    0 0 80px hsl(var(--viz-cyan) / 0.8),
+    inset 0 0 40px hsl(var(--viz-cyan) / 0.4);
+}
+
+.viz-orb--yellow {
+  width: min(14vmin, 160px);
+  height: min(14vmin, 160px);
+  background: radial-gradient(circle at 30% 30%,
+    hsl(var(--viz-yellow)),
+    hsl(var(--viz-yellow) / 0.6));
+  box-shadow:
+    0 0 100px hsl(var(--viz-yellow) / 0.8),
+    inset 0 0 50px hsl(var(--viz-yellow) / 0.3);
+}
+
+.viz-orb--purple {
+  width: min(13vmin, 150px);
+  height: min(13vmin, 150px);
+  background: radial-gradient(circle at 30% 30%,
+    hsl(var(--viz-purple)),
+    hsl(var(--viz-purple) / 0.6));
+  box-shadow:
+    0 0 90px hsl(var(--viz-purple) / 0.8),
+    inset 0 0 45px hsl(var(--viz-purple) / 0.3);
 }
