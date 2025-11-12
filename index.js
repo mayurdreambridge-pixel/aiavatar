@@ -1,4 +1,8 @@
 import './style.css';
+import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 // ============================================
 // D-ID RAW STREAMS API CONFIGURATION  
@@ -25,7 +29,7 @@ let viz = {
 };
 
 let isStartIntroIsDone = false;
-const agentId = "v2_agt_3CYryUYK"; // Your Premium+ Agent ID
+const agentId = "v2_agt_j4lgjjfA"; // Your Premium+ Agent ID
 
 const continueButton = document.getElementById('continueButton');
 const continuepage = document.getElementById('continuepage');
@@ -75,19 +79,33 @@ continueButton.addEventListener('click', async () => {
     return;
   }
   
-  // Proceed with transition
-  if (continuepage) {
-    continuepage.style.display = 'none';
-  }
-  if (mainPage) {
-    mainPage.style.display = 'block';
-  }
-  
-  // Ensure video container is visible
+  // STEP 1: Make video visible FIRST (but keep intro page visible)
   const appContainer = document.getElementById('app-container');
   if (appContainer) {
+    console.log('🎥 Making video visible...');
     appContainer.style.opacity = '1';
-    appContainer.style.transition = 'opacity 0.3s ease';
+    appContainer.style.transition = 'opacity 0.5s ease';
+  }
+  
+  // STEP 2: Wait for video to render, then hide intro page to reveal glassmorphic UI
+  // await new Promise(resolve => setTimeout(resolve, 4000)); // Wait for video fade-in
+  
+  console.log('✨ Revealing glassmorphic UI...');
+  
+  // Fade out intro page
+  if (continuepage) {
+    continuepage.style.transition = 'opacity 0.5s ease';
+    continuepage.style.opacity = '0';
+    
+    // Remove from DOM after fade
+    setTimeout(() => {
+      continuepage.style.display = 'none';
+    }, 500);
+  }
+  
+  // Show main page
+  if (mainPage) {
+    mainPage.style.display = 'block';
   }
   
   // If connection is already ready, trigger introduction now
@@ -596,7 +614,7 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
             
             if(scenarioId == 'medical')
             {
-              await AskQuestion('Give brief about medical')
+              await AskQuestion('Introduce Life Sciences')
             }
             if(scenarioId == 'manufacturing')
               {
@@ -724,7 +742,7 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
   };
 
 // smaller = closer to center
-const orbitFactor = 0.07; 
+const orbitFactor = 0.03; 
 const rect = viz.el.root.getBoundingClientRect();
 const orbit = orbitFactor * Math.min(rect.width, rect.height);
   const toDeg = (rad) => rad * (180 / Math.PI);
@@ -1353,6 +1371,224 @@ async function initializeAgent() {
       }
     });
 
+    // ===========================
+// 3D AUDIO VISUALIZER (Three.js)
+// ===========================
+
+let viz3d = {
+  scene: null,
+  camera: null,
+  renderer: null,
+  composer: null,
+  orbs: [],
+  ring: null,
+  ringBaseR: 3.5,   // nominal ring radius in world units (we’ll adapt it)
+  clock: new THREE.Clock(),
+  initialized: false,
+  velocities: null,
+  resizeObs: null
+};
+
+function init3DVisualizer() {
+  if (viz3d.initialized) return;
+  viz3d.initialized = true;
+
+  const canvas = document.getElementById('viz3d');
+  const { w, h, container } = getContainerSize();
+
+  // --- Scene / Camera ---
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+
+  const camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100);
+  // Choose a Z that frames the ring on first paint
+  // For a ring radius ~3.5, this puts it nicely in view
+  camera.position.set(0, 0, 8);
+
+  // --- Renderer ---
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));  // high-DPI but bounded
+  renderer.setSize(w, h, false);
+
+  // --- Lights ---
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  const key = new THREE.PointLight(0x99ccff, 0.8);
+  key.position.set(5, 5, 5);
+  scene.add(ambient, key);
+
+  // --- Materials ---
+  const makeMaterial = (hex) => new THREE.MeshPhysicalMaterial({
+    color: hex,
+    emissive: hex,
+    emissiveIntensity: 2.0,
+    metalness: 0.6,
+    roughness: 0.4,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.25
+  });
+
+  // --- Orbs ---
+  const orbColors = [0x00ffff, 0xffcc00, 0xcc66ff];
+  const orbs = orbColors.map((hex) => {
+    const geo = new THREE.SphereGeometry(0.7, 64, 64);
+    const mat = makeMaterial(hex);
+    const m = new THREE.Mesh(geo, mat);
+    scene.add(m);
+    return m;
+  });
+
+  // --- Ring (we will scale it on resize to fit) ---
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(viz3d.ringBaseR, 0.08, 32, 256),
+    new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0x00ffff,
+      emissiveIntensity: 1.2,
+      roughness: 0.2,
+      metalness: 0.8
+    })
+  );
+  scene.add(ring);
+
+  // --- Post FX: use container size, not window size! ---
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 1.2, 0.4, 0.85);
+  composer.addPass(bloom);
+
+  // Save
+  Object.assign(viz3d, { scene, camera, renderer, composer, orbs, ring });
+
+  // --- Fit function: keeps the content framed & renderer sized to panel ---
+  function fit() {
+    const { w, h } = getContainerSize();
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+
+    // Size renderer/composer to panel
+    renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+
+    // Adjust camera Z so the ring fits with margin
+    const marginPx = Math.min(w, h) * 0.06;       // 6% margin
+    const targetPxRadius = Math.min(w, h) * 0.42; // ring should sit inside panel nicely
+    const targetWorldR = pxToWorld(targetPxRadius, camera, h);
+
+    // Scale ring so its world radius ~ targetWorldR
+    const currentR = viz3d.ringBaseR;
+    const scale = targetWorldR / currentR;
+    ring.scale.setScalar(scale);
+  }
+
+  // Run once and also whenever the panel resizes
+  fit();
+
+  // Watch panel size (split layouts often change without window resize)
+  viz3d.resizeObs = new ResizeObserver(fit);
+  viz3d.resizeObs.observe(container);
+
+  // Start animation
+  renderer.setAnimationLoop(update3DVisualizer);
+}
+
+function update3DVisualizer() {
+  if (!viz.analyser || !viz.data) return;
+  viz.analyser.getByteFrequencyData(viz.data);
+
+  const bass   = average(viz.data.slice(0, 12))  / 255;
+  const mid    = average(viz.data.slice(13, 40)) / 255;
+  const treble = average(viz.data.slice(41, 80)) / 255;
+  const energy = (bass + mid + treble) / 3;
+
+  const t = viz3d.clock.getElapsedTime();
+
+  // Orbit radius defined in pixels relative to the panel, then converted to world units
+  const { w, h } = getContainerSize();
+  const orbitPx = Math.min(w, h) * 0.18;               // 18% of the short side
+  const orbitR  = pxToWorld(orbitPx, viz3d.camera, h); // world units
+
+  // init velocities store
+  if (!viz3d.velocities) viz3d.velocities = viz3d.orbs.map(() => new THREE.Vector3());
+
+  const orbs = viz3d.orbs;
+
+  // Targets for each orb
+  const bands = [bass, mid, treble];
+  const targets = orbs.map((_, i) => {
+    const band  = bands[i];
+    const speed = 0.6 + i * 0.28;
+    const angle = t * speed;
+    const r     = orbitR * (1 + band * 0.25); // breathe a bit with audio
+    return new THREE.Vector3(Math.cos(angle + i) * r, Math.sin(angle + i) * r, 0);
+  });
+
+  // Move toward targets
+  orbs.forEach((orb, i) => {
+    const v = viz3d.velocities[i];
+    v.add(targets[i].clone().sub(orb.position).multiplyScalar(0.08));
+    v.multiplyScalar(0.9);
+  });
+
+  // Soft collisions (no clipping)
+  const minDistance = pxToWorld(Math.min(w, h) * 0.08, viz3d.camera, h); // spacing from UI scale
+  const repulsionStrength = 0.05;
+
+  for (let i = 0; i < orbs.length; i++) {
+    for (let j = i + 1; j < orbs.length; j++) {
+      const d = orbs[i].position.clone().sub(orbs[j].position);
+      const dist = d.length();
+      if (dist < minDistance) {
+        const overlap = minDistance - dist;
+        const force = d.normalize().multiplyScalar(overlap * repulsionStrength);
+        viz3d.velocities[i].add(force);
+        viz3d.velocities[j].sub(force);
+      }
+    }
+  }
+
+  // Apply motion, deformation, and color
+  orbs.forEach((orb, i) => {
+    const band = bands[i];
+    orb.position.add(viz3d.velocities[i]);
+
+    const stretch = 1 + band * 1.0;
+    const squash  = 1 - band * 0.3;
+    orb.scale.set(stretch, squash, stretch);
+
+    const baseHue = i === 0 ? 180 : i === 1 ? 45 : 280;
+    const hue = (baseHue + band * 60) % 360;
+    const col = new THREE.Color(`hsl(${hue}, 100%, 60%)`);
+    orb.material.color.copy(col);
+    orb.material.emissive.copy(col);
+    orb.material.emissiveIntensity = 1.5 + band * 3.0;
+  });
+
+  // Ring reacts to overall energy
+  viz3d.ring.material.emissiveIntensity = 1.2 + energy * 2.0;
+
+  viz3d.composer.render();
+}
+
+function average(arr) {
+  return arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+}
+
+function getContainerSize() {
+  const container = document.getElementById('video-section'); // or a dedicated wrapper
+  const w = Math.max(1, container.clientWidth);
+  const h = Math.max(1, container.clientHeight);
+  return { w, h, container };
+}
+
+// Convert pixels at Z to world units (for consistent orbit/ring sizing)
+function pxToWorld(px, camera, h) {
+  const visibleHeight = 2 * Math.tan((camera.fov * Math.PI / 180) / 2) * camera.position.z;
+  const worldPerPx = visibleHeight / h;
+  return px * worldPerPx;
+}
+
+
+
     // ========================================
     // Track Handler (Video/Audio Stream)
     // ========================================
@@ -1376,6 +1612,8 @@ async function initializeAgent() {
         srcNode.connect(viz.analyser);
         viz.data = new Uint8Array(viz.analyser.frequencyBinCount);
         startViz();  // kick off animation loop
+        init3DVisualizer();
+
       }
     } catch (e) {
       console.warn('Visualizer setup failed:', e);
