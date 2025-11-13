@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     overflow: hidden;
@@ -37,7 +38,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
+    width: 1000vw;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -947,8 +948,8 @@ body {
 #video-section {
     position: relative;
     /* You can adjust this width - 50% was the original value */
-    width: 100%; 
-    height: 100%;
+    width: 72%; 
+    height: 79%;
     background: transparent; /* Black background for the video area */
     
     /* This is the new line that centers the video container */
@@ -958,11 +959,35 @@ body {
 
 #liveVideo, #presetVideo {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 324px;
+    left: -360px;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+#chromaCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Container that defines avatar position & size */
+#avatarWrapper {
+    position: absolute;
+    bottom: -20rem;           /* distance from bottom */
+    left: 0rem;             /* distance from left */
+    width: 100%;  /* responsive width, max 320px */
+    /*aspect-ratio: 25 / 16;   /* keep portrait shape */
+    height: 100%;
+    pointer-events: none;   /* don’t block clicks on UI behind */
+    z-index: 3;             /* above background & buttons */
+}
+
+#liveVideo.chroma-hidden {
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
 }
 
 /* Voice Controls - Floating Style */

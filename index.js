@@ -614,14 +614,14 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
             
             if(scenarioId == 'medical')
             {
-              await AskQuestion('Introduce Life Sciences')
+              // await AskQuestion('Introduce Life Sciences')
             }
             if(scenarioId == 'manufacturing')
               {
-              await AskQuestion('Give brief about manufacturing')
+              // await AskQuestion('Give brief about manufacturing')
             }
               if(scenarioId == 'finance'){
-              await AskQuestion('Give brief about finance')
+              // await AskQuestion('Give brief about finance')
             }
             // Scenario Header
             document.getElementById('scenarioHeader').innerHTML = `
@@ -894,6 +894,79 @@ const presetVideo = document.getElementById('presetVideo');
 const statusToast = document.getElementById('status-toast');
 const statusText = statusToast.querySelector('.status-text');
 const connectionStatus = document.getElementById('connection-status');
+
+const chromaCanvas = document.getElementById('chromaCanvas');
+const avatarWrapper = document.getElementById('avatarWrapper');
+
+let chromaStarted = false;
+
+// ============================================
+// SIMPLE GREEN-SCREEN CHROMA KEY
+// ============================================
+function startChromaKey() {
+  if (!chromaCanvas || !liveVideo || !avatarWrapper) return;
+
+  const ctx = chromaCanvas.getContext('2d');
+
+  // Match internal canvas resolution to the avatar wrapper
+  function resizeCanvas() {
+    const rect = avatarWrapper.getBoundingClientRect();
+    chromaCanvas.width = rect.width;
+    chromaCanvas.height = rect.height;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const keyR = 0;
+  const keyG = 255;
+  const keyB = 0;
+
+  const threshold = 120;
+  const greenDominance = 1.2;
+
+  function render() {
+    if (
+      liveVideo.readyState >= 2 &&
+      chromaCanvas.width > 0 &&
+      chromaCanvas.height > 0
+    ) {
+      // Draw the full video into the smaller canvas
+      ctx.drawImage(liveVideo, 0, 0, chromaCanvas.width, chromaCanvas.height);
+
+      const frame = ctx.getImageData(0, 0, chromaCanvas.width, chromaCanvas.height);
+      const data = frame.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const dr = r - keyR;
+        const dg = g - keyG;
+        const db = b - keyB;
+        const distSq = dr * dr + dg * dg + db * db;
+
+        const isGreenish =
+          g > 80 && g > r * greenDominance && g > b * greenDominance;
+
+        if (distSq < threshold * threshold && isGreenish) {
+          data[i + 3] = 0;
+        }
+      }
+
+      ctx.putImageData(frame, 0, 0);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  // Hide the raw video element visually
+  liveVideo.classList.add('chroma-hidden');
+  requestAnimationFrame(render);
+}
+
+
 
 (function initVizDom() {
   viz.el.root = document.getElementById('audio-viz');
@@ -1626,6 +1699,13 @@ function pxToWorld(px, camera, h) {
       if (!isVideoStreamReady) {
         isVideoStreamReady = true;
         console.log('✅ Video stream is now ready');
+      }
+
+        // 🔵 NEW: start chroma key once, when the first video track arrives
+      if (!chromaStarted) {
+        chromaStarted = true;
+        console.log('🎨 Starting chroma key on green screen');
+        startChromaKey();
       }
 
       // Monitor playback state
