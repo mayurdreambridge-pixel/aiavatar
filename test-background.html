@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            /* Add a fallback color to see if CSS is working */
+            background-color: red;
+            background-image: url('/assets/background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .test-box {
+            padding: 50px;
+            margin: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>Background Test</h1>
+        <p>If you see RED, the CSS is working but the image isn't loading.</p>
+        <p>If you see the BACKGROUND IMAGE, the path is correct.</p>
+        <p>If you see WHITE, something is covering the background.</p>
+    </div>
+    
+    <script>
+        // Check if image loads
+        const img = new Image();
+        img.onload = function() {
+            console.log('✅ Background image loaded successfully!');
+            document.querySelector('.test-box').innerHTML += '<p style="color: green;">✅ Image loaded!</p>';
+        };
+        img.onerror = function() {
+            console.error('❌ Background image failed to load!');
+            document.querySelector('.test-box').innerHTML += '<p style="color: red;">❌ Image failed to load - check the path!</p>';
+        };
+        img.src = '/assets/background.jpg';
+    </script>
+</body>
+</html>

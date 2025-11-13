@@ -4,7 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore Alqamist in Action</title>
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="/index.css" />
+    
+    <!-- Debug script to check if background loads -->
+    <script>
+        // Check if background image loads
+        window.addEventListener('load', () => {
+            const img = new Image();
+            img.onload = () => {
+                console.log('✅ Background image loaded successfully!');
+                console.log('Image size:', img.width, 'x', img.height);
+            };
+            img.onerror = () => {
+                console.error('❌ Background image FAILED to load!');
+                console.error('Expected path: /assets/background.jpg');
+                console.error('Make sure the file exists in: public/assets/background.jpg');
+            };
+            img.src = '/assets/background.jpg';
+            
+            // Check computed styles
+            setTimeout(() => {
+                const bodyBg = window.getComputedStyle(document.body).backgroundImage;
+                console.log('Body background-image:', bodyBg);
+                if (bodyBg === 'none') {
+                    console.error('❌ CSS not loading background image!');
+                }
+            }, 500);
+        });
+    </script>
 </head>
 <body>
      <div id='continuepage' class="alqamist-engine">
@@ -33,16 +60,6 @@
 
     <div class="container">
         <div id="video-section" class="video-section">
-            <!-- Audio Visualizer Overlay -->
-            <!-- <div id="audio-viz" class="viz">
-              <div id="viz-ring" class="viz-ring"></div>
-              <div id="viz-orb1" class="viz-orb viz-orb--cyan"></div>
-              <div id="viz-orb2" class="viz-orb viz-orb--yellow"></div>
-              <div id="viz-orb3" class="viz-orb viz-orb--purple"></div>
-            </div> -->
-
-            <!-- <canvas id="viz3d"></canvas> -->
-
             <!-- Connection Status Toast -->
             <div id="status-toast" class="status-toast">
                 <div class="status-content">
@@ -116,41 +133,45 @@
 
             <!-- Scenario Screen -->
             <div class="screen" id="screen2">
-                <div class="scenario-header" id="scenarioHeader"></div>
-                <div id="workflowContainer"></div>
-                
-                <div class="questions">
-                    <h3>Try asking your Genius Guide:</h3>
-                    <div class="question-grid" id="questionGrid"></div>
+                <!-- Left Panel -->
+                <div class="left-panel">
+                    <div class="scenario-header" id="scenarioHeader"></div>
+                    <div id="workflowContainer"></div>
                 </div>
+                
+                <!-- Right Panel -->
+                <div class="right-panel">
+                    <div class="questions">
+                        <h3>Try asking your Genius Guide:</h3>
+                        <div class="question-grid" id="questionGrid"></div>
+                    </div>
 
-                <div class="cta-box">
-                    <button class="cta-button" id="startChapterBtn">
-                        <span>▶</span>
-                        <span id="chapterBtnText">Start Chapter 1</span>
-                    </button>
-                    
-                    <!-- Microphone Controls - IMPROVED AND CENTERED -->
-                    <div class="voice-controls">
-                        <button id="voice-btn" class="voice-button" title="Hold to speak">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
+                    <div class="cta-box">
+                        <button class="cta-button" id="startChapterBtn">
+                            <span>▶</span>
+                            <span id="chapterBtnText">Start Chapter 1</span>
                         </button>
                         
-                        <!-- Status text will be added dynamically by JavaScript -->
-                        
-                        <!-- Agent Speaking Indicator -->
-                        <div id="agent-speaking" class="agent-speaking" style="display: none;">
-                            <div class="speaking-indicator">
-                                <span class="wave"></span>
-                                <span class="wave"></span>
-                                <span class="wave"></span>
+                        <!-- Microphone Controls -->
+                        <div class="voice-controls">
+                            <button id="voice-btn" class="voice-button" title="Hold to speak">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Agent Speaking Indicator -->
+                            <div id="agent-speaking" class="agent-speaking" style="display: none;">
+                                <div class="speaking-indicator">
+                                    <span class="wave"></span>
+                                    <span class="wave"></span>
+                                    <span class="wave"></span>
+                                </div>
+                                <span class="speaking-text">The Alqamist is speaking...</span>
+                                <button id="interrupt-btn" class="interrupt-button">Stop</button>
                             </div>
-                            <span class="speaking-text">The Alqamist is speaking...</span>
-                            <button id="interrupt-btn" class="interrupt-button">Stop</button>
                         </div>
                     </div>
                 </div>
@@ -184,7 +205,7 @@
                             <span id="continueBtnText">Continue with the Life Sciences Journey</span>
                         </button>
                         
-                        <!-- Microphone Controls - IMPROVED AND CENTERED -->
+                        <!-- Microphone Controls -->
                         <div class="voice-controls">
                             <button id="voice-btn" class="voice-button" title="Hold to speak">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -193,8 +214,6 @@
                                     <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
-                            
-                            <!-- Status text will be added dynamically by JavaScript -->
                             
                             <!-- Agent Speaking Indicator -->
                             <div id="agent-speaking" class="agent-speaking" style="display: none;">
