@@ -1,8 +1,5 @@
 import './index.css';
-import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+// ⛔️ Removed all Three.js and visualizer imports
 
 // ============================================
 // D-ID RAW STREAMS API CONFIGURATION  
@@ -12,21 +9,7 @@ const DID_API = {
   key: "ZGhlZXJhai5kaGF3YW5AZHJlYW1icmlkZ2UuZ2xvYmFs:t2A8bui_EPkp4aVwpTRaf"
 };
 
-// === Audio Visualizer state ===
-let viz = {
-  ctx: null,
-  analyser: null,
-  data: null,
-  raf: null,
-  rotation: { orb1: 0, orb2: 0, orb3: 0 },
-  el: {
-    ring: null,
-    orb1: null,
-    orb2: null,
-    orb3: null,
-    root: null
-  }
-};
+// ⛔️ Removed 'viz' global object
 
 let isStartIntroIsDone = false;
 const agentId = "v2_agt_j4lgjjfA"; // Your Premium+ Agent ID
@@ -117,9 +100,7 @@ continueButton.addEventListener('click', async () => {
   }
 });
 
-if (viz.ctx && viz.ctx.state === 'suspended') {
-  viz.ctx.resume().catch(console.warn);
-}
+// ⛔️ Removed 'viz.ctx' suspended check
 
 // --- Updated Scenario Data with 8 Chapters per Scenario ---
 
@@ -632,10 +613,14 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
                 </div>
             `;
 
+            // === MODIFICATION START ===
+            // Combine both workflow arrays into one
+            const allWorkflowItems = [...data.workflow, ...data.workflowRow2];
+
             // Workflow
             document.getElementById('workflowContainer').innerHTML = `
                 <div class="workflow">
-                    ${data.workflow.map(item => `
+                    ${allWorkflowItems.map(item => `
                         <div class="workflow-card ${item.center ? 'center' : ''}">
                             <div class="workflow-icon">${item.icon}</div>
                             <h4>${item.title}</h4>
@@ -643,15 +628,8 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
                         </div>
                     `).join('')}
                 </div>
-                <div class="workflow" style="margin-top: -30px;">
-                    ${data.workflowRow2.map(item => `
-                        <div class="workflow-card">
-                            <div class="workflow-icon">${item.icon}</div>
-                            <h4>${item.title}</h4>
-                        </div>
-                    `).join('')}
-                </div>
             `;
+            // === MODIFICATION END ===
 
             // Questions
             document.getElementById('questionGrid').innerHTML = data.questions.map(q => `
@@ -732,98 +710,7 @@ if (viz.ctx && viz.ctx.state === 'suspended') {
             document.querySelector('.content-section').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function startViz() {
-  if (!viz.analyser || !viz.data || !viz.el.root) return;
-
-  const center = () => {
-    // center of the overlay in px
-    const rect = viz.el.root.getBoundingClientRect();
-    return { x: rect.width / 2, y: rect.height / 2 };
-  };
-
-// smaller = closer to center
-const orbitFactor = 0.03; 
-const rect = viz.el.root.getBoundingClientRect();
-const orbit = orbitFactor * Math.min(rect.width, rect.height);
-  const toDeg = (rad) => rad * (180 / Math.PI);
-
-  function loop() {
-    viz.analyser.getByteFrequencyData(viz.data);
-
-    // frequency bands (normalize 0..1)
-    const bass   = avg(viz.data.slice(0, 8))   / 255;
-    const mid    = avg(viz.data.slice(8, 32))  / 255;
-    const treble = avg(viz.data.slice(32, 64)) / 255;
-
-    // rotations
-    viz.rotation.orb1 += 0.5;
-    viz.rotation.orb2 -= 0.7;
-    viz.rotation.orb3 += 0.4;
-
-    const c = center();
-
-    // ORB 1 (cyan)
-    if (viz.el.orb1) {
-      const base = 1 + bass * 0.4;
-      const a = viz.rotation.orb1 * Math.PI / 180;
-      const x = c.x + Math.cos(a) * orbit;
-      const y = c.y + Math.sin(a) * orbit;
-      const sx = base * (1 + Math.abs(Math.cos(a)) * 0.3);
-      const sy = base * (1 + Math.abs(Math.sin(a)) * 0.3 + bass * 0.2);
-      viz.el.orb1.style.left = `${x}px`;
-      viz.el.orb1.style.top = `${y}px`;
-      viz.el.orb1.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
-    }
-
-    // ORB 2 (yellow)
-    if (viz.el.orb2) {
-      const base = 1 + mid * 0.5;
-      const a = viz.rotation.orb2 * Math.PI / 180;
-      const x = c.x + Math.cos(a) * orbit;
-      const y = c.y + Math.sin(a) * orbit;
-      const sx = base * (1 + Math.abs(Math.sin(a)) * 0.4 + mid * 0.2);
-      const sy = base * (1 + Math.abs(Math.cos(a)) * 0.4);
-      viz.el.orb2.style.left = `${x}px`;
-      viz.el.orb2.style.top = `${y}px`;
-      viz.el.orb2.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
-    }
-
-    // ORB 3 (purple)
-    if (viz.el.orb3) {
-      const base = 1 + treble * 0.3;
-      const a = viz.rotation.orb3 * Math.PI / 180;
-      const x = c.x + Math.cos(a) * orbit;
-      const y = c.y + Math.sin(a) * orbit;
-      const sx = base * (1 + Math.abs(Math.cos(a + Math.PI / 4)) * 0.35);
-      const sy = base * (1 + Math.abs(Math.sin(a + Math.PI / 4)) * 0.35 + treble * 0.25);
-      viz.el.orb3.style.left = `${x}px`;
-      viz.el.orb3.style.top = `${y}px`;
-      viz.el.orb3.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy}) rotate(${toDeg(a)}deg)`;
-    }
-
-    // ring pulse
-    if (viz.el.ring) {
-      const overall = (bass + mid + treble) / 3;
-      const s = 1 + overall * 0.20;
-      viz.el.ring.style.transform = `translateZ(0) scale(${s})`;
-      viz.el.ring.style.opacity = `${0.30 + overall * 0.40}`;
-    }
-
-    viz.raf = requestAnimationFrame(loop);
-  }
-
-  const avg = (arr) => arr.reduce((a,b)=>a+b,0) / (arr.length || 1);
-  cancelAnimationFrame(viz.raf);
-  viz.raf = requestAnimationFrame(loop);
-}
-
-
-function stopViz() {
-  if (viz.raf) cancelAnimationFrame(viz.raf);
-  viz.raf = null;
-  // optional: viz.ctx?.close(); viz.ctx = null; (keep ctx if you’ll reconnect soon)
-}
-
+        // ⛔️ Removed 'startViz' and 'stopViz' functions
 
         function setupEventListeners() {
             // Domain cards
@@ -907,6 +794,8 @@ function startChromaKey() {
   if (!chromaCanvas || !liveVideo || !avatarWrapper) return;
 
   const ctx = chromaCanvas.getContext('2d');
+  
+  // ⛔️ REMOVED: The `edgeTrimRatio` logic. We will draw the full frame.
 
   // Match internal canvas resolution to the avatar wrapper
   function resizeCanvas() {
@@ -922,8 +811,9 @@ function startChromaKey() {
   const keyG = 255;
   const keyB = 0;
 
-  const threshold = 120;
-  const greenDominance = 1.2;
+  const hardCutoff = 105;
+  const softEdge = 45;
+  const greenDominance = 1.18;
 
   function render() {
     if (
@@ -931,11 +821,23 @@ function startChromaKey() {
       chromaCanvas.width > 0 &&
       chromaCanvas.height > 0
     ) {
-      // Draw the full video into the smaller canvas
+      
+      // ===================================================================
+      // ✨ FIX: Use the 'simple' drawing method to prevent scaling/cropping
+      // ===================================================================
       ctx.drawImage(liveVideo, 0, 0, chromaCanvas.width, chromaCanvas.height);
+      // ⛔️ REMOVED: All the `trimX`, `trimY`, `sourceWidth`, `sourceHeight`
+      // and the 9-argument `ctx.drawImage` call.
+      // ===================================================================
 
       const frame = ctx.getImageData(0, 0, chromaCanvas.width, chromaCanvas.height);
       const data = frame.data;
+      const width = chromaCanvas.width;
+      const height = chromaCanvas.height;
+      const pixelCount = (data.length / 4) | 0;
+      const alphaCopy = new Uint8ClampedArray(pixelCount);
+
+      // (All the advanced pixel processing from the 'improved' function remains below)
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
@@ -950,8 +852,85 @@ function startChromaKey() {
         const isGreenish =
           g > 80 && g > r * greenDominance && g > b * greenDominance;
 
-        if (distSq < threshold * threshold && isGreenish) {
-          data[i + 3] = 0;
+        if (isGreenish) {
+          const dist = Math.sqrt(distSq);
+          if (dist < hardCutoff) {
+            data[i + 3] = 0;
+          } else if (dist < hardCutoff + softEdge) {
+            const blend = (dist - hardCutoff) / softEdge;
+            data[i + 3] = Math.min(data[i + 3], Math.max(0, data[i + 3] * blend));
+          }
+
+          // Despill: pull excessive green towards averaged red/blue to avoid halo
+          const rbAverage = (r + b) / 2;
+          data[i + 1] = Math.min(rbAverage * 1.05, rbAverage * 0.85 + data[i + 1] * 0.15);
+        }
+
+        alphaCopy[i / 4] = data[i + 3];
+      }
+
+      // Feather jagged edges by applying a separable 5-tap Gaussian blur to transitional alpha values
+      const kernel = [1, 4, 6, 4, 1];
+      const kernelSum = kernel.reduce((acc, v) => acc + v, 0);
+      const tempAlpha = new Float32Array(pixelCount);
+      const blurredAlpha = new Float32Array(pixelCount);
+
+      for (let y = 0; y < height; y++) {
+        const rowIndex = y * width;
+        for (let x = 0; x < width; x++) {
+          const idx = rowIndex + x;
+          const alpha = alphaCopy[idx];
+          if (alpha === 0 || alpha === 255) {
+            tempAlpha[idx] = alpha;
+            continue;
+          }
+
+          let sum = 0;
+          for (let k = -2; k <= 2; k++) {
+            const sampleX = Math.min(width - 1, Math.max(0, x + k));
+            sum += alphaCopy[rowIndex + sampleX] * kernel[k + 2];
+          }
+
+          tempAlpha[idx] = sum / kernelSum;
+        }
+      }
+
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+          const idx = y * width + x;
+          const alpha = tempAlpha[idx];
+          if (alpha === 0 || alpha === 255) {
+            blurredAlpha[idx] = alpha;
+            continue;
+          }
+
+          let sum = 0;
+          for (let k = -2; k <= 2; k++) {
+            const sampleY = Math.min(height - 1, Math.max(0, y + k));
+            sum += tempAlpha[sampleY * width + x] * kernel[k + 2];
+          }
+
+          blurredAlpha[idx] = sum / kernelSum;
+        }
+      }
+
+      for (let idx = 0; idx < pixelCount; idx++) {
+        const originalAlpha = alphaCopy[idx];
+        if (originalAlpha === 0 || originalAlpha === 255) {
+          continue;
+        }
+
+        const smoothAlpha = Math.max(0, Math.min(255, blurredAlpha[idx]));
+        const dataIndex = idx * 4;
+        data[dataIndex + 3] = Math.round(originalAlpha * 0.25 + smoothAlpha * 0.75);
+
+        // Lightly blend RGB to reduce harsh edges on semi-transparent pixels
+        const blendFactor = data[dataIndex + 3] / 255;
+        if (blendFactor > 0 && blendFactor < 1) {
+          const avg = (data[dataIndex] + data[dataIndex + 1] + data[dataIndex + 2]) / 3;
+          data[dataIndex] = Math.round(data[dataIndex] * blendFactor + avg * (1 - blendFactor));
+          data[dataIndex + 1] = Math.round(data[dataIndex + 1] * blendFactor + avg * (1 - blendFactor));
+          data[dataIndex + 2] = Math.round(data[dataIndex + 2] * blendFactor + avg * (1 - blendFactor));
         }
       }
 
@@ -966,15 +945,7 @@ function startChromaKey() {
   requestAnimationFrame(render);
 }
 
-
-
-(function initVizDom() {
-  viz.el.root = document.getElementById('audio-viz');
-  viz.el.ring = document.getElementById('viz-ring');
-  viz.el.orb1 = document.getElementById('viz-orb1');
-  viz.el.orb2 = document.getElementById('viz-orb2');
-  viz.el.orb3 = document.getElementById('viz-orb3');
-})();
+// ⛔️ Removed 'initVizDom' function call
 
 // Initialize video states - liveVideo starts shown, presetVideo starts hidden
 liveVideo.classList.add('shown');
@@ -1092,8 +1063,7 @@ function closeConnection() {
   peerConnection = null;
   isStreamReady = false;
   isStreamPlaying = false;
-stopViz(); // <— add this line
-
+  // ⛔️ Removed stopViz() call
 }
 
 // ============================================
@@ -1444,223 +1414,7 @@ async function initializeAgent() {
       }
     });
 
-    // ===========================
-// 3D AUDIO VISUALIZER (Three.js)
-// ===========================
-
-let viz3d = {
-  scene: null,
-  camera: null,
-  renderer: null,
-  composer: null,
-  orbs: [],
-  ring: null,
-  ringBaseR: 3.5,   // nominal ring radius in world units (we’ll adapt it)
-  clock: new THREE.Clock(),
-  initialized: false,
-  velocities: null,
-  resizeObs: null
-};
-
-function init3DVisualizer() {
-  if (viz3d.initialized) return;
-  viz3d.initialized = true;
-
-  const canvas = document.getElementById('viz3d');
-  const { w, h, container } = getContainerSize();
-
-  // --- Scene / Camera ---
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
-
-  const camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 100);
-  // Choose a Z that frames the ring on first paint
-  // For a ring radius ~3.5, this puts it nicely in view
-  camera.position.set(0, 0, 8);
-
-  // --- Renderer ---
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));  // high-DPI but bounded
-  renderer.setSize(w, h, false);
-
-  // --- Lights ---
-  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
-  const key = new THREE.PointLight(0x99ccff, 0.8);
-  key.position.set(5, 5, 5);
-  scene.add(ambient, key);
-
-  // --- Materials ---
-  const makeMaterial = (hex) => new THREE.MeshPhysicalMaterial({
-    color: hex,
-    emissive: hex,
-    emissiveIntensity: 2.0,
-    metalness: 0.6,
-    roughness: 0.4,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.25
-  });
-
-  // --- Orbs ---
-  const orbColors = [0x00ffff, 0xffcc00, 0xcc66ff];
-  const orbs = orbColors.map((hex) => {
-    const geo = new THREE.SphereGeometry(0.7, 64, 64);
-    const mat = makeMaterial(hex);
-    const m = new THREE.Mesh(geo, mat);
-    scene.add(m);
-    return m;
-  });
-
-  // --- Ring (we will scale it on resize to fit) ---
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(viz3d.ringBaseR, 0.08, 32, 256),
-    new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      emissive: 0x00ffff,
-      emissiveIntensity: 1.2,
-      roughness: 0.2,
-      metalness: 0.8
-    })
-  );
-  scene.add(ring);
-
-  // --- Post FX: use container size, not window size! ---
-  const composer = new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 1.2, 0.4, 0.85);
-  composer.addPass(bloom);
-
-  // Save
-  Object.assign(viz3d, { scene, camera, renderer, composer, orbs, ring });
-
-  // --- Fit function: keeps the content framed & renderer sized to panel ---
-  function fit() {
-    const { w, h } = getContainerSize();
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-
-    // Size renderer/composer to panel
-    renderer.setSize(w, h, false);
-    composer.setSize(w, h);
-
-    // Adjust camera Z so the ring fits with margin
-    const marginPx = Math.min(w, h) * 0.06;       // 6% margin
-    const targetPxRadius = Math.min(w, h) * 0.42; // ring should sit inside panel nicely
-    const targetWorldR = pxToWorld(targetPxRadius, camera, h);
-
-    // Scale ring so its world radius ~ targetWorldR
-    const currentR = viz3d.ringBaseR;
-    const scale = targetWorldR / currentR;
-    ring.scale.setScalar(scale);
-  }
-
-  // Run once and also whenever the panel resizes
-  fit();
-
-  // Watch panel size (split layouts often change without window resize)
-  viz3d.resizeObs = new ResizeObserver(fit);
-  viz3d.resizeObs.observe(container);
-
-  // Start animation
-  renderer.setAnimationLoop(update3DVisualizer);
-}
-
-function update3DVisualizer() {
-  if (!viz.analyser || !viz.data) return;
-  viz.analyser.getByteFrequencyData(viz.data);
-
-  const bass   = average(viz.data.slice(0, 12))  / 255;
-  const mid    = average(viz.data.slice(13, 40)) / 255;
-  const treble = average(viz.data.slice(41, 80)) / 255;
-  const energy = (bass + mid + treble) / 3;
-
-  const t = viz3d.clock.getElapsedTime();
-
-  // Orbit radius defined in pixels relative to the panel, then converted to world units
-  const { w, h } = getContainerSize();
-  const orbitPx = Math.min(w, h) * 0.18;               // 18% of the short side
-  const orbitR  = pxToWorld(orbitPx, viz3d.camera, h); // world units
-
-  // init velocities store
-  if (!viz3d.velocities) viz3d.velocities = viz3d.orbs.map(() => new THREE.Vector3());
-
-  const orbs = viz3d.orbs;
-
-  // Targets for each orb
-  const bands = [bass, mid, treble];
-  const targets = orbs.map((_, i) => {
-    const band  = bands[i];
-    const speed = 0.6 + i * 0.28;
-    const angle = t * speed;
-    const r     = orbitR * (1 + band * 0.25); // breathe a bit with audio
-    return new THREE.Vector3(Math.cos(angle + i) * r, Math.sin(angle + i) * r, 0);
-  });
-
-  // Move toward targets
-  orbs.forEach((orb, i) => {
-    const v = viz3d.velocities[i];
-    v.add(targets[i].clone().sub(orb.position).multiplyScalar(0.08));
-    v.multiplyScalar(0.9);
-  });
-
-  // Soft collisions (no clipping)
-  const minDistance = pxToWorld(Math.min(w, h) * 0.08, viz3d.camera, h); // spacing from UI scale
-  const repulsionStrength = 0.05;
-
-  for (let i = 0; i < orbs.length; i++) {
-    for (let j = i + 1; j < orbs.length; j++) {
-      const d = orbs[i].position.clone().sub(orbs[j].position);
-      const dist = d.length();
-      if (dist < minDistance) {
-        const overlap = minDistance - dist;
-        const force = d.normalize().multiplyScalar(overlap * repulsionStrength);
-        viz3d.velocities[i].add(force);
-        viz3d.velocities[j].sub(force);
-      }
-    }
-  }
-
-  // Apply motion, deformation, and color
-  orbs.forEach((orb, i) => {
-    const band = bands[i];
-    orb.position.add(viz3d.velocities[i]);
-
-    const stretch = 1 + band * 1.0;
-    const squash  = 1 - band * 0.3;
-    orb.scale.set(stretch, squash, stretch);
-
-    const baseHue = i === 0 ? 180 : i === 1 ? 45 : 280;
-    const hue = (baseHue + band * 60) % 360;
-    const col = new THREE.Color(`hsl(${hue}, 100%, 60%)`);
-    orb.material.color.copy(col);
-    orb.material.emissive.copy(col);
-    orb.material.emissiveIntensity = 1.5 + band * 3.0;
-  });
-
-  // Ring reacts to overall energy
-  viz3d.ring.material.emissiveIntensity = 1.2 + energy * 2.0;
-
-  viz3d.composer.render();
-}
-
-function average(arr) {
-  return arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
-}
-
-function getContainerSize() {
-  const container = document.getElementById('video-section'); // or a dedicated wrapper
-  const w = Math.max(1, container.clientWidth);
-  const h = Math.max(1, container.clientHeight);
-  return { w, h, container };
-}
-
-// Convert pixels at Z to world units (for consistent orbit/ring sizing)
-function pxToWorld(px, camera, h) {
-  const visibleHeight = 2 * Math.tan((camera.fov * Math.PI / 180) / 2) * camera.position.z;
-  const worldPerPx = visibleHeight / h;
-  return px * worldPerPx;
-}
-
-
+    // ⛔️ Removed 3D Visualizer functions
 
     // ========================================
     // Track Handler (Video/Audio Stream)
@@ -1674,23 +1428,8 @@ function pxToWorld(px, camera, h) {
       // Set video source
       liveVideo.srcObject = stream;
 
-    try {
-      const hasAudio = stream.getAudioTracks && stream.getAudioTracks().length > 0;
-      if (hasAudio && !viz.ctx) {
-        // Create the audio context on user gesture later if needed
-        viz.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const srcNode = viz.ctx.createMediaStreamSource(stream);
-        viz.analyser = viz.ctx.createAnalyser();
-        viz.analyser.fftSize = 256;
-        srcNode.connect(viz.analyser);
-        viz.data = new Uint8Array(viz.analyser.frequencyBinCount);
-        startViz();  // kick off animation loop
-        init3DVisualizer();
-
-      }
-    } catch (e) {
-      console.warn('Visualizer setup failed:', e);
-    }
+      // ⛔️ Removed visualizer setup block
+      
       liveVideo.muted = false;
       liveVideo.classList.add('shown');
       presetVideo.classList.add('hidden');
@@ -2011,6 +1750,7 @@ async function interruptAgent() {
 //     const message = textInput.value.trim();
 //     if (message) {
 //       sendMessage(message);
+    
 //     }
 //   }
 // });
@@ -2081,7 +1821,7 @@ interruptButtons.forEach(btn => {
 //   try {
 //     await agentManager.interrupt({ type: 'click' });
 //     console.log('🛑 Agent interrupted');
-//   } catch (error) {
+  // } catch (error) {
 //     console.error('❌ Failed to interrupt:', error);
 //   }
 // });
@@ -2097,7 +1837,7 @@ interruptButtons.forEach(btn => {
 //     card.classList.add('loading');
     
 //     try {
-//       await agentManager.chat("introduce yourself as The Alqmist");
+//       await agentManager.chat("introduce yourself as The Alqamist");
 //       addMessage(prompt, 'user');
 //     } catch (error) {
 //       console.error('❌ Failed to send suggestion:', error);

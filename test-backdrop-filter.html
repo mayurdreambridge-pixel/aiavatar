@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backdrop Filter Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Background layer */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+        }
+        
+        /* Add some pattern to make blur more obvious */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
+            z-index: -1;
+        }
+        
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: transparent;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translate3d(0, 0, 0);
+            isolation: isolate;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .glass-card h1 {
+            margin: 0 0 20px 0;
+            color: white;
+            font-size: 32px;
+        }
+        
+        .glass-card p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <h1>Backdrop Filter Test</h1>
+            <p>If you can see a blurred effect behind this card, then backdrop-filter is working!</p>
+            <p>The card should have a frosted glass appearance.</p>
+            <div class="status" id="status">Checking...</div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if backdrop-filter is supported
+        const card = document.querySelector('.glass-card');
+        const computed = getComputedStyle(card);
+        const status = document.getElementById('status');
+        
+        console.log('backdrop-filter:', computed.backdropFilter);
+        console.log('-webkit-backdrop-filter:', computed.webkitBackdropFilter);
+        console.log('background:', computed.background);
+        
+        if (computed.backdropFilter && computed.backdropFilter !== 'none') {
+            status.textContent = '✅ backdrop-filter IS supported and applied: ' + computed.backdropFilter;
+            status.style.background = 'rgba(76, 175, 80, 0.3)';
+        } else if (computed.webkitBackdropFilter && computed.webkitBackdropFilter !== 'none') {
+            status.textContent = '✅ -webkit-backdrop-filter IS supported and applied: ' + computed.webkitBackdropFilter;
+            status.style.background = 'rgba(76, 175, 80, 0.3)';
+        } else {
+            status.textContent = '❌ backdrop-filter is NOT working in this browser';
+            status.style.background = 'rgba(244, 67, 54, 0.3)';
+        }
+    </script>
+</body>
+</html>

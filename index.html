@@ -6,7 +6,6 @@
     <title>Explore Alqamist in Action</title>
     <link rel="stylesheet" href="/index.css" />
     
-    <!-- Debug script to check if background loads -->
     <script>
         // Check if background image loads
         window.addEventListener('load', () => {
@@ -60,7 +59,6 @@
 
     <div class="container">
         <div id="video-section" class="video-section">
-            <!-- Connection Status Toast -->
             <div id="status-toast" class="status-toast">
                 <div class="status-content">
                     <div class="status-spinner"></div>
@@ -68,10 +66,9 @@
                 </div>
             </div>
 
-            <!-- Main Container -->
             <div id="app-container" style="opacity: 0;">
-                <!-- Live Video Section -->
-                <div id="video-section">
+                
+                <div>
                     <video id="liveVideo" autoplay playsinline></video>
                     <video id="presetVideo" playsinline preload="auto"></video>
 
@@ -79,11 +76,7 @@
                         <canvas id="chromaCanvas"></canvas>
                     </div>
                     
-                    <!-- Agent Info Overlay -->
                     <div class="agent-overlay">
-                        <div class="agent-info">
-                            <!-- Agent info can be added here -->
-                        </div>
                         <div class="connection-indicator">
                             <span class="pulse-dot"></span>
                             <span id="connection-status">Live</span>
@@ -100,7 +93,6 @@
                 </svg>
             </button>
 
-            <!-- Home Screen -->
             <div class="screen active" id="screen1">
                 <div class="header">
                     <h1>Explore <span class="highlight">Alqamist</span> in Action</h1>
@@ -112,7 +104,6 @@
                     reasons across different domains.
                 </p>
                 
-                <!-- Voice Controls on Home Screen -->
                 <div class="voice-controls home-voice-controls">
                     <button id="voice-btn-home" class="voice-button" title="Hold to speak">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -122,7 +113,6 @@
                         </svg>
                     </button>
                     
-                    <!-- Agent Speaking Indicator -->
                     <div id="agent-speaking-home" class="agent-speaking" style="display: none;">
                         <div class="speaking-indicator">
                             <span class="wave"></span>
@@ -135,15 +125,15 @@
                 </div>
             </div>
 
-            <!-- Scenario Screen -->
             <div class="screen" id="screen2">
-                <!-- Left Panel -->
                 <div class="left-panel">
                     <div class="scenario-header" id="scenarioHeader"></div>
                     <div id="workflowContainer"></div>
+
                 </div>
-                
-                <!-- Right Panel -->
+
+                <div class="center-panel">
+                </div>
                 <div class="right-panel">
                     <div class="questions">
                         <h3>Try asking your Genius Guide:</h3>
@@ -156,7 +146,6 @@
                             <span id="chapterBtnText">Start Chapter 1</span>
                         </button>
                         
-                        <!-- Microphone Controls -->
                         <div class="voice-controls">
                             <button id="voice-btn" class="voice-button" title="Hold to speak">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -166,7 +155,6 @@
                                 </svg>
                             </button>
                             
-                            <!-- Agent Speaking Indicator -->
                             <div id="agent-speaking" class="agent-speaking" style="display: none;">
                                 <div class="speaking-indicator">
                                     <span class="wave"></span>
@@ -181,7 +169,6 @@
                 </div>
             </div>
 
-            <!-- Chapter Screen -->
             <div class="screen" id="screen3">
                 <div class="chapter-badge">
                     <span class="dot"></span>
@@ -209,7 +196,6 @@
                             <span id="continueBtnText">Continue with the Life Sciences Journey</span>
                         </button>
                         
-                        <!-- Microphone Controls -->
                         <div class="voice-controls">
                             <button id="voice-btn" class="voice-button" title="Hold to speak">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -218,8 +204,9 @@
                                     <path d="M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
+
                             
-                            <!-- Agent Speaking Indicator -->
+                            
                             <div id="agent-speaking" class="agent-speaking" style="display: none;">
                                 <div class="speaking-indicator">
                                     <span class="wave"></span>

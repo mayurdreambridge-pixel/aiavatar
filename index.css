@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     overflow: hidden;
@@ -12,18 +11,27 @@ body {
     margin: 0;
     padding: 0;
 
-    /* === ADDITIONS === */
-    /* Fallback color - if you see blue, the image isn't loading */
+    /* IMPORTANT: allow the ::before background to be seen as the backdrop */
+    position: relative;
+    /* remove isolation & transparent background */
+    /* background-color: transparent; */
+    /* isolation: isolate; */
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background-color: #1a1a2e;
-    /* Use your image as the background for the whole page */
     background-image: url('/assets/background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    /* === END ADDITIONS === */
+    z-index: -1;
 }
-
 /* FULL SCREEN AVATAR LAYOUT */
 .container {
     position: relative;
@@ -43,7 +51,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    /* === FIX 1: REMOVED z-index: 1; === */
+    /* This was creating a stacking context and blocking backdrop-filter */
 }
 
 .presenter {
@@ -98,7 +107,7 @@ body {
 }
 
 .back-button:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) rotateY(10deg); /* 3D EFFECT */
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
@@ -135,6 +144,18 @@ body {
     flex-direction: column;
     padding-right: 20px;
 }
+
+/* === NEW === */
+/* Center Panel for Workflow */
+#screen2 .center-panel {
+    grid-column: 2;
+    position: relative;
+    height: 100%;
+    padding-top: 60px; /* Space from top */
+}
+
+/* === END NEW === */
+
 
 /* Group right panel items */
 #screen2 .right-panel {
@@ -200,6 +221,7 @@ body {
     max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
+    perspective: 1000px; /* 3D EFFECT */
 }
 
 .domain-card {
@@ -219,7 +241,7 @@ body {
 }
 
 .domain-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px) scale(1.02) rotateX(5deg); /* 3D EFFECT */
     background: rgba(255, 255, 255, 0.15);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
     border-color: rgba(255, 255, 255, 0.3);
@@ -279,31 +301,20 @@ body {
 .scenario-header {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 20px 25px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+    gap: 5px;
+    margin-top: 90px;
 }
 
 .scenario-icon {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #4a90e2, #357abd);
+    background: #4a90e2;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 24px;
-    box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4);
 }
 
 .scenario-header h2 {
@@ -345,62 +356,66 @@ body {
     position: relative;
     height: 70vh;
     padding: 20px;
+    perspective: 1000px; /* 3D EFFECT */
 }
 
 #screen2 .workflow {
     display: block;
     position: relative;
     max-width: 100%;
-    margin: 0;
+    margin-top: 50px;
     height: 100%;
 }
 
 /* Scattered positioning for workflow cards */
-#screen2 .workflow-card:nth-child(1) {
+#screen2 .workflow-card:nth-child(1) { /* Lab Analysis */
     position: absolute;
     top: 10%;
-    left: 5%;
+    left: 10%;
 }
 
-#screen2 .workflow-card:nth-child(2) {
+#screen2 .workflow-card:nth-child(2) { /* Trial Protocol (Center Hub) */
     position: absolute;
-    top: 30%;
-    left: 25%;
+    top: 40%;
+    left: 50%;
+    /* Use transform to center it perfectly and apply the scale */
+    transform: translate(-50%, -50%) scale(1.15); 
 }
 
-#screen2 .workflow-card:nth-child(3) {
+#screen2 .workflow-card:nth-child(3) { /* Data Files */
     position: absolute;
-    top: 50%;
-    right: 10%;
+    top: 10%;
+    /* === FIX 2: Adjusted 'right' positioning === */
+    right: 10%; 
 }
 
-#screen2 .workflow-card:nth-child(4) {
+#screen2 .workflow-card:nth-child(4) { /* Molecular Structure */
     position: absolute;
-    top: 20%;
-    right: 5%;
-    transform: scale(1.15);
-}
-
-#screen2 .workflow-card:nth-child(5) {
-    position: absolute;
-    bottom: 20%;
+    bottom: 25%;
     left: 15%;
+    /* Removed the scale from here, as it's on the center card */
+}
+
+#screen2 .workflow-card:nth-child(5) { /* Research Notes */
+    position: absolute;
+    bottom: 35%;
+    /* === FIX 2: Adjusted 'right' positioning === */
+    right: -15%;
 }
 
 .workflow-card {
+    /* background: grey; */ /* MODIFICATION */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    
     border-radius: 12px;
     padding: 20px;
     text-align: center;
     min-width: 150px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* MODIFICATION */
+    transition: all 0.3s ease; /* MODIFICATION */
 }
 
 /* More compact cards for scenario screen */
@@ -410,7 +425,7 @@ body {
 }
 
 .workflow-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) rotateX(3deg); /* 3D EFFECT */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -424,7 +439,7 @@ body {
 }
 
 .workflow-card.center:hover {
-    transform: scale(1.15) translateY(-5px);
+    transform: scale(1.15) translateY(-5px) rotateX(2deg); /* 3D EFFECT */
 }
 
 .workflow-icon {
@@ -435,7 +450,7 @@ body {
 
 #screen2 .workflow-icon {
     font-size: 24px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .workflow-card h4 {
@@ -462,15 +477,16 @@ body {
 
 /* Questions Section */
 .questions {
-    margin-bottom: 50px;
+    margin-top: 50px;
     max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
+    perspective: 1000px; /* 3D EFFECT */
 }
 
 /* Right Panel for Scenario Screen */
 #screen2 .questions {
-    margin: 0;
+    margin-top: 90px;
     padding: 0 20px;
     display: flex;
     flex-direction: column;
@@ -507,21 +523,19 @@ body {
 }
 
 .question-card {
+    /* background: grey; */ /* MODIFICATION */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+
     border-radius: 12px;
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 15px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* MODIFICATION */
 }
 
 #screen2 .question-card {
@@ -530,7 +544,7 @@ body {
 }
 
 .question-card:hover {
-    transform: translateX(5px);
+    transform: translateX(5px) rotateX(3deg); /* 3D EFFECT */
     background: rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
@@ -571,19 +585,17 @@ body {
 
 /* CTA Box - Floating Panel */
 .cta-box {
+    /* background: grey; */ /* MODIFICATION */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 24px;
+
+    border-radius: 16px;
     padding: 40px;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    max-width: 600px;
-    margin: 0 auto;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* MODIFICATION */
+    perspective: 1000px; /* 3D EFFECT */
 }
 
 /* Position CTA box at bottom of right panel in scenario screen */
@@ -628,6 +640,9 @@ body {
     align-items: center;
     gap: 10px;
     box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4);
+    
+    transform-style: preserve-3d; /* 3D EFFECT */
+    transform: translateZ(0); /* 3D EFFECT */
 }
 
 #screen2 .cta-button {
@@ -635,8 +650,14 @@ body {
 }
 
 .cta-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) rotateX(5deg); /* 3D EFFECT */
     box-shadow: 0 8px 32px rgba(74, 144, 226, 0.6);
+}
+
+/* 3D EFFECT */
+.cta-button:active {
+    transform: translateY(1px) scale(0.98); /* Press it down */
+    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4); /* Smaller shadow */
 }
 
 /* Chapter Badge - Floating */
@@ -774,6 +795,7 @@ body {
     text-align: center;
     z-index: 1;
     animation: fadeInUp 1s ease;
+    perspective: 1000px; /* 3D EFFECT */
 }
 
 @keyframes fadeInUp {
@@ -879,11 +901,19 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transform-style: preserve-3d; /* 3D EFFECT */
+    transform: translateZ(0); /* 3D EFFECT */
 }
 
 .alqamist-engine__action-button:hover {
-    transform: translateY(-3px);
+    transform: translateY(-3px) rotateX(5deg); /* 3D EFFECT */
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* 3D EFFECT */
+.alqamist-engine__action-button:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* STATUS TOAST */
@@ -976,10 +1006,10 @@ body {
 #avatarWrapper {
     position: absolute;
     bottom: -20rem;           /* distance from bottom */
-    left: 0rem;             /* distance from left */
-    width: 100%;  /* responsive width, max 320px */
+    left: -10rem;             /* distance from left */
+    width: 130%;  /* responsive width, max 320px */
     /*aspect-ratio: 25 / 16;   /* keep portrait shape */
-    height: 100%;
+    height: 120%;
     pointer-events: none;   /* don’t block clicks on UI behind */
     z-index: 3;             /* above background & buttons */
 }
@@ -1047,6 +1077,9 @@ body {
 
 .voice-button:active:not(.disabled) {
     transform: scale(0.95);
+    /* 3D EFFECT */
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5), 
+                inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Recording State */
@@ -1230,88 +1263,7 @@ body {
     pointer-events: none;
 }
 
-/* Audio Visualizer */
-:root{
-    --viz-cyan: 190 100% 60%;
-    --viz-yellow: 45 100% 50%;
-    --viz-purple: 270 85% 65%;
-    --viz-glow: 200 100% 60%;
-}
-
-.viz {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    display: grid;
-    place-items: center;
-    z-index: 5;
-}
-
-.viz-ring {
-    width: min(45vmin, 420px);
-    height: min(45vmin, 420px);
-    border-radius: 9999px;
-    border: 3px solid hsl(var(--viz-glow) / 0.75);
-    background: radial-gradient(circle at 30% 30%,
-        hsl(var(--viz-cyan) / 0.10),
-        hsl(var(--viz-yellow) / 0.10),
-        transparent 70%);
-    box-shadow:
-        0 0 60px hsl(var(--viz-glow) / 0.55),
-        inset 0 0 60px hsl(var(--viz-glow) / 0.65);
-    filter: blur(0px);
-    transform: translateZ(0);
-}
-
-.viz-orb {
-    position: absolute;
-    border-radius: 9999px;
-    filter: blur(0px);
-    transform: translate(-50%, -50%);
-    will-change: transform, left, top;
-}
-
-.viz-orb--cyan {
-    width: min(12vmin, 130px);
-    height: min(12vmin, 130px);
-    background: radial-gradient(circle at 30% 30%,
-        hsl(var(--viz-cyan)),
-        hsl(var(--viz-cyan) / 0.6));
-    box-shadow:
-        0 0 80px hsl(var(--viz-cyan) / 0.8),
-        inset 0 0 40px hsl(var(--viz-cyan) / 0.4);
-}
-
-.viz-orb--yellow {
-    width: min(14vmin, 160px);
-    height: min(14vmin, 160px);
-    background: radial-gradient(circle at 30% 30%,
-        hsl(var(--viz-yellow)),
-        hsl(var(--viz-yellow) / 0.6));
-    box-shadow:
-        0 0 100px hsl(var(--viz-yellow) / 0.8),
-        inset 0 0 50px hsl(var(--viz-yellow) / 0.3);
-}
-
-.viz-orb--purple {
-    width: min(13vmin, 150px);
-    height: min(13vmin, 150px);
-    background: radial-gradient(circle at 30% 30%,
-        hsl(var(--viz-purple)),
-        hsl(var(--viz-purple) / 0.6));
-    box-shadow:
-        0 0 90px hsl(var(--viz-purple) / 0.8),
-        inset 0 0 45px hsl(var(--viz-purple) / 0.3);
-}
-
-#viz3d {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    z-index: 5;
-}
+/* ⛔️ Removed All CSS for Audio Visualizer */
 
 /* Agent Overlay */
 .agent-overlay {
