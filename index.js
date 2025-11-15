@@ -83,6 +83,10 @@ continueButton.addEventListener('click', async () => {
     // Remove from DOM after fade
     setTimeout(() => {
       continuepage.style.display = 'none';
+      requestAnimationFrame(() => {
+          const cs = document.querySelector('.content-section');
+          if (cs) cs.style.transform = 'translateZ(0)';
+        });
     }, 500);
   }
   
@@ -595,7 +599,7 @@ continueButton.addEventListener('click', async () => {
             
             if(scenarioId == 'medical')
             {
-              // await AskQuestion('Introduce Life Sciences')
+               await AskQuestion('Introduce Life Sciences')
             }
             if(scenarioId == 'manufacturing')
               {
@@ -1018,7 +1022,7 @@ function updateMicButtonState(state) {
       text.textContent = '🎤 Listening...';
       text.classList.add('recording');
     } else if (state === 'disabled') {
-      text.textContent = 'AI is speaking...';
+      // text.textContent = 'AI is speaking...';
       text.classList.add('disabled');
     } else {
       text.textContent = 'Hold to speak';
