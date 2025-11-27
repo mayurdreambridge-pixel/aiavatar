@@ -12,11 +12,11 @@ const DID_API = {
 // ⛔️ Removed 'viz' global object
 
 let isStartIntroIsDone = false;
-const agentId = "v2_agt_j4lgjjfA"; // Your Premium+ Agent ID
+const agentId = "v2_agt_7fdQs7OJ"; // Your Premium+ Agent ID
 
 const continueButton = document.getElementById('continueButton');
 const continuepage = document.getElementById('continuepage');
-const mainPage = document.getElementById('mainPage');
+const mainPage = document.querySelector('.content-section'); // Selects the class instead
 
 let isAgentLoaded = false;
 let isVideoStreamReady = false; // Track if video stream has started
@@ -94,7 +94,25 @@ continueButton.addEventListener('click', async () => {
   if (mainPage) {
     mainPage.style.display = 'block';
   }
-  
+
+// === REPLACE THE PREVIOUS requestAnimationFrame BLOCK WITH THIS ===
+setTimeout(() => {
+      // 1. Select the elements that have the glass effect
+      const glassElements = document.querySelectorAll('.glass, .domain-card, .header, .instruction');
+      
+      glassElements.forEach(el => {
+          // 2. Forcefully hide them from the layout tree
+          el.style.display = 'none';
+      });
+
+      // 3. Bring them back in the next frame
+      requestAnimationFrame(() => {
+          glassElements.forEach(el => {
+              el.style.display = ''; // Removes inline style, reverting to CSS class
+          });
+      });
+  }, 100); // Small delay to ensure the Canvas is running
+      
   // If connection is already ready, trigger introduction now
   // Otherwise, it will be triggered when connection becomes ready
   if (isConnected && !hasIntroduced) {
@@ -112,7 +130,7 @@ continueButton.addEventListener('click', async () => {
             medical: {
                 id: 'medical',
                 title: 'Scenario 1: Life Sciences',
-                subtitle: 'Medical Writing and Research',
+                subtitle: '',
                 icon: '🧬',
                 iconBg: 'green',
                 workflow: [
@@ -125,10 +143,10 @@ continueButton.addEventListener('click', async () => {
                     { icon: '📝', title: 'Research Notes', center: false }
                 ],
                 questions: [
-                    { icon: 'ℹ️', color: 'blue', text: 'Why do Phase 3 trials take so long to prepare?' },
-                    { icon: '💡', color: 'green', text: 'What is reasoning?' },
-                    { icon: '💊', color: 'orange', text: 'What kind of drug is this example about?' },
-                    { icon: '🔍', color: 'red', text: 'How does Alqamist know what to focus on first?' }
+                    { icon: '', color: '', text: 'What is reasoning?' },
+                    { icon: '', color: '', text: 'What kind of drug is this example about?' },
+                    { icon: '', color: '', text: 'Why do Phase 3 trials take so long to prepare?' },
+                    { icon: '', color: '', text: 'How does Alqamist know what to focus on first?' }
                 ],
                 chapters: [ // Array of 8 chapters
                     // Chapter 1
@@ -556,9 +574,7 @@ continueButton.addEventListener('click', async () => {
         };
 
         const domains = [
-            { id: 'medical', icon: '👨‍⚕️', color: 'green', title: 'Medical Writing<br>and Research' },
-            { id: 'manufacturing', icon: '🏭', color: 'orange', title: 'Manufacturing' },
-            { id: 'finance', icon: '🛡️', color: 'blue', title: 'Pension and<br>Insurance' }
+            { id: 'medical', icon: '👨‍⚕️', color: 'green', title: 'Medical Writing and Research' }
         ];
 
         let currentScreen = 1;
@@ -573,10 +589,13 @@ continueButton.addEventListener('click', async () => {
 
         function renderDomains() {
             const container = document.getElementById('domainCards');
+            // We changed the structure: A wrapper (.domain-item) holds the icon and the text-card separately
             container.innerHTML = domains.map(domain => `
-                <div class="domain-card" data-domain="${domain.id}">
+                <div class="domain-item" data-domain="${domain.id}">
                     <div class="domain-icon ${domain.color}">${domain.icon}</div>
-                    <h3>${domain.title}</h3>
+                    <div class="domain-text-card">
+                        <h3>${domain.title}</h3>
+                    </div>
                 </div>
             `).join('');
         }
@@ -698,8 +717,19 @@ continueButton.addEventListener('click', async () => {
         }
 
         function navigateTo(screenNum) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen${screenNum}`).classList.add('active');
+           document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.style.opacity = '0'; // Ensure hidden screens are transparent
+            });
+
+            const activeScreen = document.getElementById(`screen${screenNum}`);
+            activeScreen.classList.add('active');
+            
+            // Slight delay to allow 'display: block' to apply before fading in
+            // This ensures the element is in the DOM before the browser tries to draw the blur
+            requestAnimationFrame(() => {
+                activeScreen.style.opacity = '1';
+            });
             currentScreen = screenNum;
             
             const backBtn = document.getElementById('backBtn');
@@ -719,7 +749,9 @@ continueButton.addEventListener('click', async () => {
         function setupEventListeners() {
             // Domain cards
             document.getElementById('domainCards').addEventListener('click', async (e) => {
-                const card = e.target.closest('.domain-card');
+                // CHANGED: Look for .domain-item instead of .domain-card
+                const card = e.target.closest('.domain-item'); 
+                
                 if (card) {
                     const domainId = card.dataset.domain;
                     
@@ -1375,14 +1407,14 @@ async function initializeAgent() {
       
       switch(peerConnection.connectionState) {
         case 'connecting':
-          updateConnectionStatus('Connecting...', false);
+          updateConnectionStatus('', false);
           break;
           
         case 'connected':
           setTimeout(() => {
             if (!isStreamReady) isStreamReady = true;
             isConnected = true;
-            updateConnectionStatus('Live', true);
+            updateConnectionStatus('', true);
             hideStatus();
             
             // Show app with fade-in
@@ -1405,7 +1437,7 @@ async function initializeAgent() {
           
         case 'disconnected':
         case 'closed':
-          updateConnectionStatus('Disconnected', false);
+          updateConnectionStatus('', false);
           isConnected = false;
           currentVideoId = null;
           showStatus('Connection lost. Refresh to reconnect.');

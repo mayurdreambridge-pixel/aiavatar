@@ -33,6 +33,68 @@
     </script>
 </head>
 <body>
+    <!-- SVG Filter for Hologram Scanlines (respects alpha/transparency) -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+        <defs>
+            <filter id="hologramFilter" x="0%" y="0%" width="100%" height="100%">
+                <!-- Create horizontal scanlines pattern -->
+                <feFlood flood-color="black" flood-opacity="0.15" result="scanColor"/>
+                <feFlood flood-color="transparent" result="transparent"/>
+                
+                <!-- Create a striped pattern using turbulence + threshold -->
+                <feTurbulence type="fractalNoise" baseFrequency="0 0.5" numOctaves="1" result="noise"/>
+                <feComponentTransfer in="noise" result="stripes">
+                    <feFuncR type="discrete" tableValues="0 1"/>
+                    <feFuncG type="discrete" tableValues="0 1"/>
+                    <feFuncB type="discrete" tableValues="0 1"/>
+                    <feFuncA type="discrete" tableValues="0 0.15"/>
+                </feComponentTransfer>
+                
+                <!-- Composite scanlines only where original image has alpha -->
+                <feComposite in="stripes" in2="SourceAlpha" operator="in" result="maskedStripes"/>
+                
+                <!-- Blend scanlines with original -->
+                <feBlend in="SourceGraphic" in2="maskedStripes" mode="multiply" result="withScanlines"/>
+                
+                <!-- Add subtle noise for that transmission feel -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" result="staticNoise"/>
+                <feComponentTransfer in="staticNoise" result="subtleNoise">
+                    <feFuncA type="linear" slope="0.08"/>
+                </feComponentTransfer>
+                <feComposite in="subtleNoise" in2="SourceAlpha" operator="in" result="maskedNoise"/>
+                <feBlend in="withScanlines" in2="maskedNoise" mode="overlay"/>
+            </filter>
+        </defs>
+    </svg>
+
+    <div id="global-background"></div>
+    
+    <!-- ========== MATRIX TECH LINES ========== -->
+    <div class="matrix-lines-container">
+        <!-- Horizontal lines - scattered across screen -->
+        <div class="matrix-line matrix-line--h" style="--x: 5%; --y: 15%; --w: 80px; --delay: 0s; --duration: 3s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 85%; --y: 25%; --w: 60px; --delay: 1.2s; --duration: 2.5s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 12%; --y: 40%; --w: 100px; --delay: 2.5s; --duration: 3.5s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 75%; --y: 55%; --w: 50px; --delay: 0.8s; --duration: 2.8s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 20%; --y: 70%; --w: 70px; --delay: 3.2s; --duration: 3s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 90%; --y: 80%; --w: 90px; --delay: 1.8s; --duration: 2.6s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 8%; --y: 88%; --w: 55px; --delay: 4s; --duration: 3.2s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 65%; --y: 12%; --w: 45px; --delay: 2s; --duration: 2.4s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 35%; --y: 32%; --w: 65px; --delay: 3.5s; --duration: 2.9s;"></div>
+        <div class="matrix-line matrix-line--h" style="--x: 78%; --y: 68%; --w: 85px; --delay: 0.5s; --duration: 3.3s;"></div>
+        
+        <!-- Vertical lines - scattered across screen -->
+        <div class="matrix-line matrix-line--v" style="--x: 8%; --y: 20%; --h: 60px; --delay: 0.3s; --duration: 2.8s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 92%; --y: 35%; --h: 80px; --delay: 1.5s; --duration: 3.2s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 18%; --y: 50%; --h: 50px; --delay: 2.8s; --duration: 2.5s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 82%; --y: 15%; --h: 70px; --delay: 0.9s; --duration: 3s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 25%; --y: 75%; --h: 90px; --delay: 3.8s; --duration: 3.4s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 88%; --y: 60%; --h: 55px; --delay: 2.2s; --duration: 2.7s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 5%; --y: 45%; --h: 65px; --delay: 1s; --duration: 3.1s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 72%; --y: 85%; --h: 45px; --delay: 4.2s; --duration: 2.6s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 15%; --y: 8%; --h: 75px; --delay: 1.7s; --duration: 2.9s;"></div>
+        <div class="matrix-line matrix-line--v" style="--x: 95%; --y: 72%; --h: 40px; --delay: 3s; --duration: 3.5s;"></div>
+    </div>
      <div id='continuepage' class="alqamist-engine">
         <div class="alqamist-engine__circle alqamist-engine__circle--1"></div>
         <div class="alqamist-engine__circle alqamist-engine__circle--2"></div>
@@ -79,7 +141,7 @@
                     <div class="agent-overlay">
                         <div class="connection-indicator">
                             <span class="pulse-dot"></span>
-                            <span id="connection-status">Live</span>
+                            <span id="connection-status"></span>
                         </div>
                     </div>
                 </div>
@@ -98,10 +160,12 @@
                     <h1>Explore <span class="highlight">Alqamist</span> in Action</h1>
                     <div class="underline"></div>
                 </div>
-                <div class="domains glass" id="domainCards"></div>
+                <div class="domains glass" id="domainCards">
+                    
+                    
+                </div>
                 <p class="instruction">
-                    Tap and choose a scenario to see how Alqamist<br>
-                    reasons across different domains.
+                    Tap to see how the Alqamist works in a particular scenario
                 </p>
                 
                 <div class="voice-controls home-voice-controls">
@@ -136,7 +200,7 @@
                 </div>
                 <div class="right-panel">
                     <div class="questions">
-                        <h3>Try asking your Genius Guide:</h3>
+                        <h3>Try asking your Genius Guide</h3>
                         <div class="question-grid" id="questionGrid"></div>
                     </div>
 

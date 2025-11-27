@@ -18,8 +18,7 @@ body {
     /* isolation: isolate; */
 }
 
-body::before {
-    content: '';
+#global-background {
     position: fixed;
     top: 0;
     left: 0;
@@ -30,7 +29,12 @@ body::before {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: -1000;
+    z-index: -9999; /* Deepest layer */
+    
+    /* CRITICAL: Force GPU promotion so it sits in memory ready for the filter */
+    transform: translateZ(0); 
+    will-change: transform;
+    pointer-events: none;
 }
 /* FULL SCREEN AVATAR LAYOUT */
 .container {
@@ -72,6 +76,11 @@ body::before {
     overflow-y: auto;
     z-index: 10;
     pointer-events: none; /* Allow clicks to pass through empty space */
+    background-color: rgba(0,0,0,0.01); /* Tiny bit of opacity helps trigger the filter pipeline */
+    perspective: 1000px;
+    isolation: isolate; 
+    /* Helps the GPU anticipate changes */
+    will-change: transform;
 }
 
 .content-section > * {
@@ -87,7 +96,7 @@ body::before {
     height: 50px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     display: none;
@@ -120,11 +129,12 @@ body::before {
 .screen {
     display: none;
     opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
+    /*animation: fadeIn 0.5s ease forwards;*/
 }
 
 .screen.active {
     display: block;
+    opacity: 1;
 }
 
 /* 3-Column Layout for Scenario Screen */
@@ -133,7 +143,7 @@ body::before {
     grid-template-columns: 30% 40% 30%;
     gap: 0;
     height: 100vh;
-    padding: 40px 20px;
+    padding: 40px 20px 40px 0;
     align-items: start;
 }
 
@@ -143,6 +153,8 @@ body::before {
     display: flex;
     flex-direction: column;
     padding-right: 20px;
+    padding-left: 0;
+    margin-left: 30px;
 }
 
 /* === NEW === */
@@ -182,10 +194,10 @@ body::before {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 24px;
-    padding: 40px;
+    padding: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    max-width: 800px;
-    margin-left: auto;
+    max-width: 600px;
+    margin-left: 30%;
     margin-right: auto;
     transform: translateZ(0);
     will-change: backdrop-filter, transform;
@@ -215,122 +227,165 @@ body::before {
 /* Domain Cards - Floating Panels */
 .domains {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Slightly wider to fit side-by-side */
+    gap: 25px;
     margin-bottom: 40px;
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-    perspective: 1000px; /* 3D EFFECT */
+    /*perspective: 1000px; */
+    max-width: 360px;
 }
 
-.domain-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 40px 20px;
-    text-align: center;
+/* The Wrapper (Flex Container) */
+.domain-item {
+    display: flex;
+    align-items: center; /* Vertically center icon and text */
+    gap: 15px; /* Space between icon and text box */
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transform: translateZ(0);
     will-change: transform;
-    isolation: isolate;
+    padding: 10px; /* Breathing room for hover effects */
 }
 
-.domain-card:hover {
-    transform: translateY(-8px) scale(1.02) rotateX(5deg); /* 3D EFFECT */
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.3);
+.domain-item:hover {
+    transform: translateY(-5px) scale(1.02); 
 }
 
+/* The Icon - Now similar to Scenario Header Icon */
 .domain-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin: 0 auto 20px;
+    width: 60px;
+    height: 60px;
+    /* Glassy Look */
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(20px);
+    /* The specific shadow from your scenario header */
+    box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.2),                 
+            inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+            inset -1px -1px 0 rgba(255, 255, 155, 0.1);
+    border-radius: 50%; 
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    font-size: 28px;
+    flex-shrink: 0; /* Prevent icon from squishing */
+    margin: 0; /* Remove old margins */
 }
 
-.domain-icon.green { 
-    background: linear-gradient(135deg, #4caf50, #45a049);
-}
-.domain-icon.orange { 
-    background: linear-gradient(135deg, #ff9800, #f57c00);
-}
-.domain-icon.blue { 
-    background: linear-gradient(135deg, #2196f3, #1976d2);
-}
-
-.domain-card h3 {
-    font-size: 18px;
-    color: white;
-    font-weight: 600;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Instruction Text - Floating */
-.instruction {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
-    line-height: 1.6;
-    background: rgba(255, 255, 255, 0.1);
+/* The Text Box */
+.domain-text-card {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
-    padding: 20px 30px;
-    max-width: 600px;
-    margin: 0 auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    text-align: left; /* Align text left */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.domain-item:hover .domain-text-card {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.domain-text-card h3 {
+    font-size: 15px;
+    color: white;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+}
+
+/* Remove old .domain-card styles if they conflict, or rename them */
+/* Instruction Text - Floating */
+.instruction {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) ;
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    max-width: 400px;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+
 }
 
 /* Scenario Header - Floating */
 .scenario-header {
-    background: rgba(128,128,128,0.8);
-    border-radius: 12px;
-    padding: 20px;
+    /*background: rgba(128,128,128,0.8);
+    border-radius: 12px;*/
+    padding: 20px 20px 20px 0;
+    margin-left: 0;
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-top: 90px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    margin-top: 60px;
+    /*box-shadow: 0 2px 8px rgba(0,0,0,0.5);*/
 
 }
 
 .scenario-icon {
     width: 50px;
     height: 50px;
-    background: #4a90e2;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.2),                 
+       /* 1. Top-Left White Rim (Positive X and Y) */
+            inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+            /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+            inset -1px -1px 0 rgba(255, 255, 155, 0.1);
+    border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 24px;
+    margin: 0;
+    flex-shrink: 0;
 }
 
+
 .scenario-header h2 {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) ;
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px;
     font-size: 28px;
     color: white;
     margin-bottom: 5px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+       /* 1. Top-Left White Rim (Positive X and Y) */
+            inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+            /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+            inset -1px -1px 0 rgba(255, 255, 155, 0.1);
+    transform: translateZ(0);
+    will-change: backdrop-filter, transform;
+    isolation: isolate;
 }
 
 #screen2 .scenario-header h2 {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .scenario-header p {
@@ -350,95 +405,97 @@ body::before {
     justify-content: center;
     gap: 15px;
     margin-bottom: 50px;
-    flex-wrap: wrap;
-    max-width: 1000px;
+    /*flex-wrap: wrap;*/
+    /*max-width: 1000px;*/
     margin-left: auto;
     margin-right: auto;
 }
 
-/* Workflow Container for Scenario Screen - Organic Layout */
+/* Workflow Container for Scenario Screen - Column Layout */
 #screen2 #workflowContainer {
-    position: relative;
-    height: 70vh;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 30px;
+    margin-left: 0;
+    padding-left: 0;
     perspective: 1000px; /* 3D EFFECT */
 }
 
 #screen2 .workflow {
-    display: block;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
     max-width: 100%;
-    margin-top: 50px;
-    height: 100%;
+    margin-top: 0;
+    height: auto;
+
+    /* ✅ ADD THESE LINES TO FIX ALIGNMENT */
+    margin-left: 0;  /* Overrides the 'auto' from the generic .workflow class */
+    padding-left: 0; /* Ensures no extra padding */
+    
 }
 
-/* Scattered positioning for workflow cards */
-#screen2 .workflow-card:nth-child(1) { /* Lab Analysis */
-    position: absolute;
-    top: 10%;
-    left: 10%;
-}
-
-#screen2 .workflow-card:nth-child(2) { /* Trial Protocol (Center Hub) */
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    /* Use transform to center it perfectly and apply the scale */
-    transform: translate(-50%, -50%) scale(1.15); 
-}
-
-#screen2 .workflow-card:nth-child(3) { /* Data Files */
-    position: absolute;
-    top: 10%;
-    /* === FIX 2: Adjusted 'right' positioning === */
-    right: 10%; 
-}
-
-#screen2 .workflow-card:nth-child(4) { /* Molecular Structure */
-    position: absolute;
-    bottom: 25%;
-    left: 15%;
-    /* Removed the scale from here, as it's on the center card */
-}
-
-#screen2 .workflow-card:nth-child(5) { /* Research Notes */
-    position: absolute;
-    bottom: 35%;
-    /* === FIX 2: Adjusted 'right' positioning === */
-    right: -15%;
+/* Remove scattered positioning for workflow cards */
+#screen2 .workflow-card:nth-child(1),
+#screen2 .workflow-card:nth-child(2),
+#screen2 .workflow-card:nth-child(3),
+#screen2 .workflow-card:nth-child(4),
+#screen2 .workflow-card:nth-child(5) {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    transform: none;
 }
 
 .workflow-card {
-    background: rgba(128,128,128,0.8);
-    border-radius: 12px;
-    padding: 20px;
     text-align: center;
     min-width: 150px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
-/* More compact cards for scenario screen */
+/* Workflow cards in scenario screen - horizontal layout with icon and text box */
 #screen2 .workflow-card {
-    min-width: 120px;
-    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    min-width: auto;
+    padding: 0;
+    text-align: left;
+    width: 100%;
 }
 
 .workflow-card:hover {
-    transform: translateY(-5px) rotateX(3deg); /* 3D EFFECT */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transform: translateX(5px) rotateX(2deg); /* 3D EFFECT */
+}
+
+#screen2 .workflow-card:hover {
+    transform: translateX(5px);
 }
 
 .workflow-card.center {
-    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
     padding: 30px;
     transform: scale(1.1);
-    box-shadow: 0 8px 40px rgba(74, 144, 226, 0.5);
+}
+
+/* Remove center card special styling for scenario screen */
+#screen2 .workflow-card.center {
+    padding: 0;
+    transform: none;
 }
 
 .workflow-card.center:hover {
     transform: scale(1.15) translateY(-5px) rotateX(2deg); /* 3D EFFECT */
+}
+
+/* Center card hover same as other cards in scenario screen */
+#screen2 .workflow-card.center:hover {
+    transform: translateX(5px);
 }
 
 .workflow-icon {
@@ -447,9 +504,27 @@ body::before {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
+/* Icon in blue circle for scenario screen */
 #screen2 .workflow-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
     font-size: 24px;
-    margin-bottom: 10px;
+    margin: 0;
+    flex-shrink: 0;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
 }
 
 .workflow-card h4 {
@@ -459,19 +534,44 @@ body::before {
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Title in grey rounded box for scenario screen */
 #screen2 .workflow-card h4 {
-    font-size: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px) ;
+    -webkit-backdrop-filter: blur(10%);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    margin: 0;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
+    flex: 1;
+    text-align: left;
 }
 
 .workflow-card.center h4 {
     font-size: 16px;
 }
 
+/* Override center styling for scenario screen */
+#screen2 .workflow-card.center h4 {
+    font-size: 14px;
+}
+
 .workflow-card p {
     font-size: 12px;
-    margin-top: 5px;
+    margin-top: 0px;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide subtitle in scenario screen workflow cards */
+#screen2 .workflow-card p {
+    display: none;
 }
 
 /* Questions Section */
@@ -486,26 +586,40 @@ body::before {
 /* Right Panel for Scenario Screen */
 #screen2 .questions {
     margin-top: 90px;
-    padding: 0 20px;
+    align-items: left;
+    /*padding: 0 20px;*/
     display: flex;
     flex-direction: column;
     height: auto;
 }
 
 .questions h3 {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px) ;
+    -webkit-backdrop-filter: blur(10%);
     font-size: 16px;
     margin-bottom: 25px;
-    margin-left: 55px;
+    margin-left: 45px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
+    align-items: center;
+
 }
 
 #screen2 .questions h3 {
     text-align: left;
     font-size: 18px;
-    color: #4a90e2;
+    color: white;
     margin-bottom: 20px;
+    margin-left: 0px;
 }
 
 .question-grid {
@@ -522,19 +636,28 @@ body::before {
     grid-template-columns: 1fr;
 }
 
+
+
 .question-card {
-    background: rgba(128,128,128,0.8);
+    background: rgba(128, 128, 128, 0.5);
+    backdrop-filter: blur(20px) ;
+    -webkit-backdrop-filter: blur(25px);
     border-radius: 12px;
     padding: 20px;
     display: flex;
-    align-items: center;
-    gap: 15px;
+    align-items: left;
+    gap: 5px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
 }
 
 #screen2 .question-card {
-    padding: 15px;
+    padding: 10px;
     gap: 12px;
 }
 
@@ -544,7 +667,7 @@ body::before {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-.question-icon {
+/*.question-icon {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -554,13 +677,13 @@ body::before {
     flex-shrink: 0;
     font-size: 18px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-}
+}*/
 
-#screen2 .question-icon {
+/*#screen2 .question-icon {
     width: 32px;
     height: 32px;
     font-size: 16px;
-}
+}*/
 
 .question-icon.blue { background: #2196f3; color: white; }
 .question-icon.green { background: #4caf50; color: white; }
@@ -580,11 +703,11 @@ body::before {
 
 /* CTA Box - Floating Panel */
 .cta-box {
-    background: rgba(128,128,128,0.8);
-    border-radius: 16px;
+    /*background: rgba(128,128,128,0.8);
+    border-radius: 16px;*/
     padding: 40px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    /*box-shadow: 0 4px 12px rgba(0,0,0,0.5);*/
 }
 
 /* Position CTA box at bottom of right panel in scenario screen */
@@ -628,8 +751,12 @@ body::before {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4);
-    
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),                 /* Standard Drop Shadow */
+   /* 1. Top-Left White Rim (Positive X and Y) */
+        inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+        /* 2. Bottom-Right Dark/Subtle Rim (Negative X and Y) */
+        inset -1px -1px 0 rgba(255, 255, 155, 0.1);
     transform-style: preserve-3d; /* 3D EFFECT */
     transform: translateZ(0); /* 3D EFFECT */
 }
@@ -989,18 +1116,85 @@ body::before {
     width: 100%;
     height: 100%;
     display: block;
+    
+
+    filter: 
+        url(#hologramFilter)
+        grayscale(100%) 
+        brightness(1.5)       
+        contrast(1.3)         
+        sepia(100%) 
+        hue-rotate(160deg) 
+        saturate(350%);       
+    opacity: 0.8;            
+    animation: hologramFlicker 0.1s infinite;
+    
+
+    -webkit-mask-image: 
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.3) 8%,
+            rgba(0, 0, 0, 0.7) 15%,
+            rgba(0, 0, 0, 1) 25%,
+            rgba(0, 0, 0, 1) 100%
+        ),
+        radial-gradient(
+            ellipse 70% 85% at 50% 45%,
+            rgba(0, 0, 0, 1) 40%,
+            rgba(0, 0, 0, 0.8) 55%,
+            rgba(0, 0, 0, 0.4) 70%,
+            rgba(0, 0, 0, 0) 90%
+        );
+    mask-image: 
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.3) 8%,
+            rgba(0, 0, 0, 0.7) 15%,
+            rgba(0, 0, 0, 1) 50%,
+            rgba(0, 0, 0, 1) 100%
+        ),
+        radial-gradient(
+            ellipse 70% 85% at 50% 45%,
+            rgba(0, 0, 0, 1) 40%,
+            rgba(0, 0, 0, 0.8) 55%,
+            rgba(0, 0, 0, 0.4) 70%,
+            rgba(0, 0, 0, 0) 90%
+        );
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
 }
 
 /* Container that defines avatar position & size */
 #avatarWrapper {
     position: absolute;
-    bottom: -20rem;           /* distance from bottom */
-    left: -10rem;             /* distance from left */
-    width: 130%;  /* responsive width, max 320px */
-    /*aspect-ratio: 25 / 16;   /* keep portrait shape */
-    height: 120%;
-    pointer-events: none;   /* don’t block clicks on UI behind */
+    /* ========== CENTERED POSITIONING ========== */
+    bottom: 20%;               /* Position from bottom */
+    left: 50%;                /* Center horizontally */
+    transform: translateX(-50%);  /* Offset by half width to truly center */
+    width: 60%;               /* SCALED DOWN - was 130% */
+    height: 60%;              /* SCALED DOWN - was 120% */
+    pointer-events: none;   /* don't block clicks on UI behind */
     z-index: 3;             /* above background & buttons */
+    
+    /* ========== ENHANCED HOLOGRAM GLOW + RIM LIGHTING ========== */
+    filter: 
+        drop-shadow(0 0 8px rgba(0, 220, 255, 0.9))
+        drop-shadow(0 0 15px rgba(0, 200, 255, 0.7))
+/*        drop-shadow(0 0 30px rgba(0, 150, 255, 0.5))
+        drop-shadow(0 0 60px rgba(0, 100, 255, 0.3))
+        drop-shadow(2px 0 4px rgba(0, 255, 255, 0.6))
+        drop-shadow(-2px 0 4px rgba(0, 255, 255, 0.6))
+        drop-shadow(0 -2px 4px rgba(100, 200, 255, 0.4));*/
+}
+
+/* ========== HOLOGRAM FLICKER ANIMATION ========== */
+@keyframes hologramFlicker {
+    0%, 100% { opacity: 0.8; }
+    25% { opacity: 0.76; }
+    50% { opacity: 0.82; }
+    75% { opacity: 0.78; }
 }
 
 #liveVideo.chroma-hidden {
@@ -1026,7 +1220,12 @@ body::before {
 }
 
 .home-voice-controls {
-    margin-top: 50px !important;
+    position: absolute;       /* allows us to place it anywhere on screen */
+    bottom: 30%;             /* distance from the bottom */
+    right: 10%;              /* distance from the right */
+    z-index: 50;              /* ensure it sits on top of the video */
+    align-items: center;      /* keeps the text centered with the button */
+
 }
 
 /* Microphone Button - Glowing Floating Style */
@@ -1035,7 +1234,7 @@ body::before {
     height: 70px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.3);
-    background: linear-gradient(135deg, rgba(74, 144, 226, 0.8) 0%, rgba(53, 122, 189, 0.8) 100%);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     color: white;
@@ -1047,9 +1246,7 @@ body::before {
     box-shadow: 0 8px 32px rgba(74, 144, 226, 0.5);
     position: relative;
     margin: 0 auto;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+
 }
 
 /* Larger voice button in scenario screen */
@@ -1122,12 +1319,22 @@ body::before {
 
 /* Visual Feedback Text */
 .mic-status-text {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 12px;
     text-align: center;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.9);
-    min-height: 20px;
+    /*min-height: 20px;*/
     animation: fadeIn 0.3s ease;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateZ(0);
+    will-change: backdrop-filter, transform;
+    isolation: isolate;
 }
 
 .mic-status-text.recording {
@@ -1155,8 +1362,8 @@ body::before {
     gap: 15px;
     padding: 15px 25px;
     background: linear-gradient(135deg, rgba(74, 144, 226, 0.9) 0%, rgba(53, 122, 189, 0.9) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 50px;
     color: white;
@@ -1165,7 +1372,7 @@ body::before {
     transform: translateZ(0);
     will-change: transform;
     isolation: isolate;
-}
+}   
 
 @keyframes slideIn {
     from {
@@ -1280,7 +1487,7 @@ body::before {
     isolation: isolate;
 }
 
-.connection-indicator {
+/*.connection-indicator {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1294,7 +1501,7 @@ body::before {
     transform: translateZ(0);
     will-change: transform;
     isolation: isolate;
-}
+}*/
 
 .pulse-dot {
     width: 8px;
